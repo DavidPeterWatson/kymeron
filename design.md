@@ -24,6 +24,7 @@ BTT Octopus pro with TMC5160 Pro so that Voltage can be increased to 48V for hig
 The actuators that drive the gantry beams are also the frame for the machine.
 THe gantry only moves in the x and z directions, while the bed moves in the y direction.
 
+
 ## Frame
 4 x z-axis linear actuators to move the bed vertically.
 Vertical linear actuators also form the vertical frame.
@@ -65,13 +66,14 @@ List of toolheads:
 - Electrical wire printer toolhead
 - Electrical Soldering toolhead
 
+### Each Toolhead
 Toolheads will be built on CANBUS boards
 https://biqu.equipment/products/bigtreetech-ebb-36-42-can-bus-for-connecting-klipper-expansion-device?variant=39760665182306
 This allows for many toolheads to be connected to a single CANBUS through BTT Octopus pro canbus bridge.
 toolhead changer does not need to change electronic connections.
 BTT EBB36/42
 
-CanBus terminal resistors\
+CanBus terminal resistors
 Only the 2 end toolheads will have 120ohm resistors
 octopus pro and end of the twisted pair.
 https://e2e.ti.com/support/interface-group/interface/f/interface-forum/850222/sn65hvd251-can-bus-termination
@@ -79,6 +81,13 @@ https://e2e.ti.com/support/interface-group/interface/f/interface-forum/850222/sn
 
 
 Filament toolheads
+- https://www.bondtech.se/product/lgx-ace-mosquito-printhead/
+
+Large diameter PTFE tube for filament. Allow hot air to flow out through PTFE tube to preheat filament.
+
+https://www.aliexpress.com/item/32730855848.html?_randl_currency=NZD&_randl_shipto=NZ&src=google&memo1=freelisting&src=google&albch=shopping&acnt=494-037-6276&slnk=&plac=&mtctp=&albbt=Google_7_shopping&albagn=888888&isSmbAutoCall=false&needSmbHouyi=false&albcp=9444695485&albag=99457316601&trgt=1459734606882&crea=en32730855848&netw=u&device=c&albpg=1459734606882&albpd=en32730855848&gclid=Cj0KCQjwhsmaBhCvARIsAIbEbH4zDrgT9jA4TWF1_hX97Ajxq-JhdDpC8_BkMOKl3fPxQT5BdpYAEKAaApLEEALw_wcB&gclsrc=aw.ds&aff_fcid=d15cdb6bbaff43378d590866d32d7114-1666416491270-01265-UneMJZVf&aff_fsk=UneMJZVf&aff_platform=aaf&sk=UneMJZVf&aff_trace_key=d15cdb6bbaff43378d590866d32d7114-1666416491270-01265-UneMJZVf&terminal_id=55d5318285104dbd81f90e38987a2cba&afSmartRedirect=y
+
+large diameter silicon tube to push
 
 
 ## Sensors and attachments
@@ -89,12 +98,16 @@ This provides feedback for possible fire so that the printer can be turned off a
 ### Toolhead level sensor
 A contact sensor provides micron accuracy of toolhead height for all toolheads. This allows the bed level sensor to be calibrated with all other sensors using the highest accuracy contact sensor. This accuracy is independant of bed type because all sensing is done with contact sensors.
 
-### Filamnet toolhead cleaner
+### Filament toolhead cleaner
 Separate component to the side for cleaning toolheads
 
 ### Cameras
-Take video and photographs for machining
+Take video and photographs
 
+### Chamber Heater
+Heating element
+Heating fan
+Chamber temperature sensor
 
 ## Wiring
 
@@ -104,4 +117,9 @@ Wall Socket -> 48V Power supply : Power supply cable
 48V Power supply -> BTT Octopus Pro : 16 agw, 2 core silicon
 BTT Octopus Pro -> EBB toolhead : power 18 agw, 2 core silicon, canh/l 24 agw
 BTT Octopus Pro -> Nema23 motors : Cat5e doubled up for each strand with XH2.54 4pin to 6pin PH2.0 Terminal Motor Connector Cables
+BTT Octopus Pro -> Chamber Heater : 
+BTT Octopus Pro -> Chamber temperature Sensor : Cat5e
+
+
+https://www.aliexpress.com/item/1005001732356744.html?spm=a2g0o.productlist.0.0.2a9668eehXHEF0&algo_pvid=c2463b0e-fe50-4855-8b70-8a39056fa019&algo_exp_id=c2463b0e-fe50-4855-8b70-8a39056fa019-3&pdp_ext_f=%7B%22sku_id%22%3A%2212000029019902332%22%7D&pdp_npi=2%40dis%21NZD%215.93%215.04%21%21%211.22%21%21%40210318cf16664135231422745e70c9%2112000029019902332%21sea&curPageLogUid=twhreFYSkeQF
 
