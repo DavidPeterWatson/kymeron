@@ -24,6 +24,12 @@ BTT Octopus pro with TMC5160 Pro so that Voltage can be increased to 48V for hig
 The actuators that drive the gantry beams are also the frame for the machine.
 THe gantry only moves in the x and z directions, while the bed moves in the y direction.
 
+## Frame
+4 x z-axis linear actuators to move the bed vertically.
+Vertical linear actuators also form the vertical frame.
+Vertical linear actuators are C-Beam extrusions with steppers motors mounted at the top.
+maybe -> 2040 lead screw mount holds the bottom of the lead screw higher than the bottom end of the Vertical linear actuators. ?
+
 
 
 ## Bed
@@ -63,6 +69,14 @@ Toolheads will be built on CANBUS boards
 https://biqu.equipment/products/bigtreetech-ebb-36-42-can-bus-for-connecting-klipper-expansion-device?variant=39760665182306
 This allows for many toolheads to be connected to a single CANBUS through BTT Octopus pro canbus bridge.
 toolhead changer does not need to change electronic connections.
+BTT EBB36/42
+
+CanBus terminal resistors\
+Only the 2 end toolheads will have 120ohm resistors
+octopus pro and end of the twisted pair.
+https://e2e.ti.com/support/interface-group/interface/f/interface-forum/850222/sn65hvd251-can-bus-termination
+
+
 
 Filament toolheads
 
@@ -80,4 +94,14 @@ Separate component to the side for cleaning toolheads
 
 ### Cameras
 Take video and photographs for machining
+
+
+## Wiring
+
+Wall Socket -> 24V Power supply : Power supply cable
+Wall Socket -> 48V Power supply : Power supply cable
+24V Power supply -> BTT Octopus Pro : 16 agw, 2 core silicon
+48V Power supply -> BTT Octopus Pro : 16 agw, 2 core silicon
+BTT Octopus Pro -> EBB toolhead : power 18 agw, 2 core silicon, canh/l 24 agw
+BTT Octopus Pro -> Nema23 motors : Cat5e doubled up for each strand with XH2.54 4pin to 6pin PH2.0 Terminal Motor Connector Cables
 
