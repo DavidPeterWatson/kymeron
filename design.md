@@ -87,8 +87,12 @@ Large diameter PTFE tube for filament. Allow hot air to flow out through PTFE tu
 
 https://www.aliexpress.com/item/32730855848.html?_randl_currency=NZD&_randl_shipto=NZ&src=google&memo1=freelisting&src=google&albch=shopping&acnt=494-037-6276&slnk=&plac=&mtctp=&albbt=Google_7_shopping&albagn=888888&isSmbAutoCall=false&needSmbHouyi=false&albcp=9444695485&albag=99457316601&trgt=1459734606882&crea=en32730855848&netw=u&device=c&albpg=1459734606882&albpd=en32730855848&gclid=Cj0KCQjwhsmaBhCvARIsAIbEbH4zDrgT9jA4TWF1_hX97Ajxq-JhdDpC8_BkMOKl3fPxQT5BdpYAEKAaApLEEALw_wcB&gclsrc=aw.ds&aff_fcid=d15cdb6bbaff43378d590866d32d7114-1666416491270-01265-UneMJZVf&aff_fsk=UneMJZVf&aff_platform=aaf&sk=UneMJZVf&aff_trace_key=d15cdb6bbaff43378d590866d32d7114-1666416491270-01265-UneMJZVf&terminal_id=55d5318285104dbd81f90e38987a2cba&afSmartRedirect=y
 
-large diameter silicon tube to push
+Large diameter silicon tube to push
 
+Filament toolhead cabling summary
+- 18 agw, 2 core silicon
+- 22 agw twisted pair
+- 8mm PTFE Tube
 
 ## Sensors and attachments
 
@@ -109,17 +113,27 @@ Heating element
 Heating fan
 Chamber temperature sensor
 
+https://www.aliexpress.com/item/1005001737139798.html?spm=a2g0o.detail.0.0.69d51cacsq7ZMD&gps-id=pcDetailBottomMoreThisSeller&scm=1007.13339.291025.0&scm_id=1007.13339.291025.0&scm-url=1007.13339.291025.0&pvid=f5336a29-bdae-4944-9390-a1a41320cee5&_t=gps-id:pcDetailBottomMoreThisSeller,scm-url:1007.13339.291025.0,pvid:f5336a29-bdae-4944-9390-a1a41320cee5,tpp_buckets:668%232846%238113%231998&pdp_ext_f=%7B%22sku_id%22%3A%2212000017392285956%22%2C%22sceneId%22%3A%223339%22%7D&pdp_npi=2%40dis%21NZD%2130.98%2130.98%21%21%21%21%21%402103239b16664227929741405ea123%2112000017392285956%21rec
+
+Suck cold air out the chamber from the bottom.
+Blow hot air in the chamber near the top.
+Chamber temperature sensor under the bed
+Chamber temperature sensor near the top
+Chamber temperature sensor near the bottom
+
+
 ## Wiring
 
 Wall Socket -> 24V Power supply : Power supply cable
 Wall Socket -> 48V Power supply : Power supply cable
-24V Power supply -> BTT Octopus Pro : 16 agw, 2 core silicon
-48V Power supply -> BTT Octopus Pro : 16 agw, 2 core silicon
-BTT Octopus Pro -> EBB toolhead : power 18 agw, 2 core silicon, canh/l 24 agw
-BTT Octopus Pro -> Nema23 motors : Cat5e doubled up for each strand with XH2.54 4pin to 6pin PH2.0 Terminal Motor Connector Cables
+24V Power supply -> BTT Octopus Pro : 16 agw, 2 core
+48V Power supply -> BTT Octopus Pro : 16 agw, 2 core
+BTT Octopus Pro -> EBB toolhead : power 18 agw, 2 core silicon, canh/l 22 agw
+BTT Octopus Pro -> Nema23 motors : Cat5e doubled up for each strand with XH2.54 4pin
 BTT Octopus Pro -> Chamber Heater : 
 BTT Octopus Pro -> Chamber temperature Sensor : Cat5e
 
 
 https://www.aliexpress.com/item/1005001732356744.html?spm=a2g0o.productlist.0.0.2a9668eehXHEF0&algo_pvid=c2463b0e-fe50-4855-8b70-8a39056fa019&algo_exp_id=c2463b0e-fe50-4855-8b70-8a39056fa019-3&pdp_ext_f=%7B%22sku_id%22%3A%2212000029019902332%22%7D&pdp_npi=2%40dis%21NZD%215.93%215.04%21%21%211.22%21%21%40210318cf16664135231422745e70c9%2112000029019902332%21sea&curPageLogUid=twhreFYSkeQF
+
 
