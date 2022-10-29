@@ -10,8 +10,10 @@ Crossed Gantry
 Fully enclosed and insulated chamber.
 Possible clear to provide visibility of operation to increase ability to fix. Visible feedback.
 Vacume holes at the base of chamber to suck of cnc debris.
-Chamber is heated from vents placed around the based of the vertical side panels. The heat should rise and heat the bed as well as the air on the chamber.
-The temperature of 3D printed polymers needs to be kept just below the Glass transition temprature to increase the 
+Suck air in the bottom of the chamber and introduce hot air near the top.
+The temperature of 3D printed polymers needs to be kept just below the Glass transition temprature to increase the bonding.
+https://3dsolved.com/3d-filament-glass-transition-temperatures/
+
 
 
 ## Gantry
@@ -32,9 +34,15 @@ Vertical linear actuators are C-Beam extrusions with steppers motors mounted at 
 maybe -> 2040 lead screw mount holds the bottom of the lead screw higher than the bottom end of the Vertical linear actuators. ?
 
 
+## Cover
+Twin wall polycarbonate roofing
+https://www.bunnings.co.nz/twinwall-8-x-2400-x-610mm-clear-polycarbonate-roofing_p0124718?store=9474&gclid=Cj0KCQjwteOaBhDuARIsADBqRehCLp3DZUIPm4RK3flJGLu8eTeC2iw4wb14_lYqLewhmDrlqb3sHxsaAi3mEALw_wcB&gclsrc=aw.ds
+
+join
+https://www.bunnings.co.nz/twinwall-2400-x-8mm-clear-h-jointer_p0124720
 
 ## Bed
-Bed is heated indirectly by heaters at the base of the printer. This has the affect of heating the entire insulated chamber.
+Bed is heated indirectly by air heater at the top of the printer. This has the affect of heating the entire insulated chamber.
 Bed needs to be changable. Bed Types:
 - Glass for 3d Printing
 - Aluminium Slats with Hardboard for cnc
@@ -62,7 +70,8 @@ List of toolheads:
 - Laser Cutter toolhead
 - Inkjet toolhead
 - Clay printer toolhead
-- Electrical Component placement (Robotic arm) toolhead
+- Pick and Place Toolhead (Electrical Component placement)
+- Robotic arm toolhead
 - Electrical wire printer toolhead
 - Electrical Soldering toolhead
 
@@ -80,7 +89,7 @@ https://e2e.ti.com/support/interface-group/interface/f/interface-forum/850222/sn
 
 
 
-Filament toolheads
+### Filament toolheads
 - https://www.bondtech.se/product/lgx-ace-mosquito-printhead/
 
 Large diameter PTFE tube for filament. Allow hot air to flow out through PTFE tube to preheat filament.
@@ -93,6 +102,10 @@ Filament toolhead cabling summary
 - 18 agw, 2 core silicon
 - 22 agw twisted pair
 - 8mm PTFE Tube
+
+
+### Vinyl Cutter Toolhead
+
 
 ## Sensors and attachments
 
@@ -129,7 +142,7 @@ Wall Socket -> 48V Power supply : Power supply cable
 24V Power supply -> BTT Octopus Pro : 16 agw, 2 core
 48V Power supply -> BTT Octopus Pro : 16 agw, 2 core
 BTT Octopus Pro -> EBB toolhead : power 18 agw, 2 core silicon, canh/l 22 agw
-BTT Octopus Pro -> Nema23 motors : Cat5e doubled up for each strand with XH2.54 4pin
+BTT Octopus Pro -> Nema23 motors : 22 agw silicon wires shielded 4 core
 BTT Octopus Pro -> Chamber Heater : 
 BTT Octopus Pro -> Chamber temperature Sensor : Cat5e
 
