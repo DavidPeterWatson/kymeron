@@ -75,6 +75,8 @@ List of toolheads:
 - Electrical wire printer toolhead
 - Electrical Soldering toolhead
 
+Place toolheads with an umbilical cable near the corners, so that the umbilical cables are pulled out of the way when the tool head is docked.
+
 ### Each Toolhead
 Toolheads will be built on CANBUS boards
 https://biqu.equipment/products/bigtreetech-ebb-36-42-can-bus-for-connecting-klipper-expansion-device?variant=39760665182306
