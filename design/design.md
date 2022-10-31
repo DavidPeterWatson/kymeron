@@ -143,11 +143,38 @@ Chamber temperature sensor near the top
 Chamber temperature sensor near the bottom
 
 
+## Electronics box
+
+### Cover
+Polycarbonate sheeting for cover
+
+### Motherboard
+BigTreeTech Ocotopius Pro
+
+### Shutdown Module
+BIGTREETECH Relay V1.2 Automatic Shutdown Module
+https://www.youtube.com/watch?v=5wJff-hY90s
+
+Normally open push button
+
+
+### UPS Module
+BTT UPS 24V V1.0 Resume Printing While Power Off Module
+
+
+
+
+
 ## Wiring
 
-Wall Socket -> 24V Power supply : Power supply cable
+Wall Socket -> Shutdown Module : Power supply cable
+
+Shutdown Module -> 24V Power supply : 16 agw, 2 core
+Shutdown Module | PSU on pins -> BTT Octopus Pro PSU On pins : Thin cable
+Shutdown Module | 5v rst pins -> Normally open push button
 Wall Socket -> 48V Power supply : Power supply cable
-24V Power supply -> BTT Octopus Pro : 16 agw, 2 core
+24V Power supply -> BTT Octopus Pro Power: 16 agw, 2 core
+BTT Octopus Pro UPS Pin -> UPS Module : Provided Cable
 48V Power supply -> BTT Octopus Pro : 16 agw, 2 core
 BTT Octopus Pro -> EBB toolhead : power 18 agw, 2 core silicon, canh/l 22 agw
 BTT Octopus Pro -> Nema23 motors : 22 agw silicon wires shielded 4 core
