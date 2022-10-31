@@ -64,6 +64,7 @@ List of toolheads:
 - Camera toolhead
 - 3D Scanner toolhead
 - Vinyl Cutter toolhead
+- Paintbrush toolhead
 - CNC toolhead (with vacuum brush head)
   - Connects to x and z gantries to provide extra stability.
   - Attaches to gantries from the corner
@@ -107,6 +108,11 @@ Filament toolhead cabling summary
 
 
 ### Vinyl Cutter Toolhead
+
+
+
+### Paintbrush Toolhead
+Extra 2 degrees of freedom to tilt angle of paint brush
 
 
 ## Sensors and attachments
