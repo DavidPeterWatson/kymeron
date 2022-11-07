@@ -151,6 +151,43 @@ Polycarbonate sheeting for cover
 ### Motherboard
 BigTreeTech Ocotopius Pro
 
+
+### Power Supply
+
+#### 24 Volt Power Supply
+Mean Well LRS-350-24
+https://www.aliexpress.com/item/4000356081734.html
+
+Power requirements
+Motors:  4 x 2 amps = 8 amps
+Motherboard = 1 amp
+Other = 2 Amp
+
+Sub Total = 11 amps
+Safety Factor 20%
+Total = 13.2 amps
+13.2A x 24V = 316 Watts
+
+#### 48 Volt Power Supply
+SE-600-48 Mean Well 600W/12.5A/48V DC Single Output Power Supply
+https://www.aliexpress.com/item/4000390635110.html
+
+
+Power requirements
+HV Motors: 4 x 2.8 amps = 11.2 amps
+
+Sub Total = 11.2 amps
+Safety Factor 20%
+Total = 13.5 amps
+
+13.5A x 48V = 648 Watts
+645 Watts
+
+Safety Factor 10%
+Total = 12.5 amps
+600Watts
+
+
 ### Shutdown Module
 BIGTREETECH Relay V1.2 Automatic Shutdown Module
 https://www.youtube.com/watch?v=5wJff-hY90s
@@ -169,13 +206,13 @@ BTT UPS 24V V1.0 Resume Printing While Power Off Module
 
 Wall Socket -> Shutdown Module : Power supply cable
 
-Shutdown Module -> 24V Power supply : 16 agw, 2 core
+Shutdown Module -> 24V Power supply : 14 agw, 2 core
 Shutdown Module | PSU on pins -> BTT Octopus Pro PSU On pins : Thin cable
 Shutdown Module | 5v rst pins -> Normally open push button
 Wall Socket -> 48V Power supply : Power supply cable
-24V Power supply -> BTT Octopus Pro Power: 16 agw, 2 core
+24V Power supply -> BTT Octopus Pro Power: 14 agw, 2 core
 BTT Octopus Pro UPS Pin -> UPS Module : Provided Cable
-48V Power supply -> BTT Octopus Pro : 16 agw, 2 core
+48V Power supply -> BTT Octopus Pro : 14 agw, 2 core
 BTT Octopus Pro -> EBB toolhead : power 18 agw, 2 core silicon, canh/l 22 agw
 BTT Octopus Pro -> Nema23 motors : 22 agw silicon wires shielded 4 core
 BTT Octopus Pro -> Chamber Heater : 
