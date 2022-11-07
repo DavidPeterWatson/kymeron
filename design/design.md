@@ -15,23 +15,24 @@ The temperature of 3D printed polymers needs to be kept just below the Glass tra
 https://3dsolved.com/3d-filament-glass-transition-temperatures/
 
 
-
-## Gantry
-Crossed Gantry
-Each toolhead has its own roller. Only 1 degree of movement requires engaging.
-2 motors for each axis increases force applied to each axis.
+## Frame
+2 motors for each horizontal axis increases force applied to each axis.
 Nema 23 motors for higher forces
 BTT Octopus pro with TMC5160 Pro so that Voltage can be increased to 48V for higher speeds and higher amps.
 
 The actuators that drive the gantry beams are also the frame for the machine.
-THe gantry only moves in the x and z directions, while the bed moves in the y direction.
+The gantry only moves in the x and y directions, while the bed moves in the z direction.
 
-
-## Frame
 4 x z-axis linear actuators to move the bed vertically.
 Vertical linear actuators also form the vertical frame.
-Vertical linear actuators are C-Beam extrusions with steppers motors mounted at the top.
-maybe -> 2040 lead screw mount holds the bottom of the lead screw higher than the bottom end of the Vertical linear actuators. ?
+Vertical linear actuators are C-Beam extrusions with stepper motors mounted at the bottom.
+Stepper motors at the bottom are also the feet for the printer. Placing steppers at the top will get in the way and will be inside the heated chamber. Placing vertical steppers at the bottom will be outsode the heated chamber an therefore cooler.
+
+
+## Gantry
+Crossed Gantry
+Each toolhead has its own roller. Only 1 degree of movement requires engaging.
+
 
 
 ## Cover
@@ -159,7 +160,7 @@ Mean Well LRS-350-24
 https://www.aliexpress.com/item/4000356081734.html
 
 Power requirements
-Motors:  4 x 2 amps = 8 amps
+Motors:  4 x 2.8 amps = 11.2 amps
 Motherboard = 1 amp
 Other = 2 Amp
 
@@ -206,13 +207,13 @@ BTT UPS 24V V1.0 Resume Printing While Power Off Module
 
 Wall Socket -> Shutdown Module : Power supply cable
 
-Shutdown Module -> 24V Power supply : 14 agw, 2 core
+Shutdown Module -> 24V Power supply : 16 agw, 2 core
 Shutdown Module | PSU on pins -> BTT Octopus Pro PSU On pins : Thin cable
 Shutdown Module | 5v rst pins -> Normally open push button
 Wall Socket -> 48V Power supply : Power supply cable
-24V Power supply -> BTT Octopus Pro Power: 14 agw, 2 core
+24V Power supply -> BTT Octopus Pro Power: 16 agw, 2 core
 BTT Octopus Pro UPS Pin -> UPS Module : Provided Cable
-48V Power supply -> BTT Octopus Pro : 14 agw, 2 core
+48V Power supply -> BTT Octopus Pro : 16 agw, 2 core
 BTT Octopus Pro -> EBB toolhead : power 18 agw, 2 core silicon, canh/l 22 agw
 BTT Octopus Pro -> Nema23 motors : 22 agw silicon wires shielded 4 core
 BTT Octopus Pro -> Chamber Heater : 
