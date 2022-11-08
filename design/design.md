@@ -66,6 +66,7 @@ List of toolheads:
 - 3D Scanner toolhead
 - Vinyl Cutter toolhead
 - Paintbrush toolhead
+- Laser cutter toolhead 
 - CNC toolhead (with vacuum brush head)
   - Connects to x and z gantries to provide extra stability.
   - Attaches to gantries from the corner
