@@ -224,3 +224,8 @@ BTT Octopus Pro -> Chamber temperature Sensor : Cat5e
 https://www.aliexpress.com/item/1005001732356744.html?spm=a2g0o.productlist.0.0.2a9668eehXHEF0&algo_pvid=c2463b0e-fe50-4855-8b70-8a39056fa019&algo_exp_id=c2463b0e-fe50-4855-8b70-8a39056fa019-3&pdp_ext_f=%7B%22sku_id%22%3A%2212000029019902332%22%7D&pdp_npi=2%40dis%21NZD%215.93%215.04%21%21%211.22%21%21%40210318cf16664135231422745e70c9%2112000029019902332%21sea&curPageLogUid=twhreFYSkeQF
 
 
+Wire Gauge
+16 agw -> 22 Amps
+18 agw -> 16 Amps
+22 agw -> 7 Amps
+24 agw -> 3.5 Amps
