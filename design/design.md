@@ -153,6 +153,8 @@ Polycarbonate sheeting for cover
 ### Motherboard
 BigTreeTech Ocotopius Pro
 
+pin names
+https://teamgloomy.github.io/btt_octopus_pro_1.0_f429_pins.html
 
 ### Power Supply
 
