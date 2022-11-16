@@ -185,21 +185,23 @@ Mean Well LRS-350-24
 https://www.aliexpress.com/item/4000356081734.html
 
 Power requirements
-Motors:  4 x 2.8 amps = 11.2 amps
+Drives the z steppers because they are slow 
+Motors:  4 x 2.5 amps = 10 amps
 Motherboard = 1 amp
 Other = 2 Amp
 
-Sub Total = 11 amps
-Safety Factor 20%
-Total = 13.2 amps
-13.2A x 24V = 316 Watts
+Sub Total = 13 amps
+Safety Factor 15%
+Total = 15 amps
+15A x 24V = 360 Watts
 
 #### 48 Volt Power Supply
 SE-600-48 Mean Well 600W/12.5A/48V DC Single Output Power Supply
 https://www.aliexpress.com/item/4000390635110.html
 
 
-Power requirements
+Power requirement
+Drives the x & y steppers because they require higher speed
 HV Motors: 4 x 2.8 amps = 11.2 amps
 
 Sub Total = 11.2 amps
