@@ -8,10 +8,10 @@ Crossed Gantry
 
 ## Chamber
 Fully enclosed and insulated chamber.
-Possible clear to provide visibility of operation to increase ability to fix. Visible feedback.
-Vacume holes at the base of chamber to suck of cnc debris.
+Possibly clear to provide visibility of operation to increase ability to fix. Visible feedback.
+Vacuum holes at the base of chamber to suck of cnc debris.
 Suck air in the bottom of the chamber and introduce hot air near the top.
-The temperature of 3D printed polymers needs to be kept just below the Glass transition temprature to increase the bonding.
+The temperature of chamber and 3D printed polymers needs to be kept just below the Glass transition temperature to increase the bonding.
 https://3dsolved.com/3d-filament-glass-transition-temperatures/
 
 
@@ -43,7 +43,7 @@ y-axis right
 
 ## Gantry
 Crossed Gantry
-Each toolhead has its own roller. Only 1 degree of movement requires engaging.
+Each toolhead has its own gantry cart. Only 1 degree of movement requires engaging.
 
 
 
@@ -61,7 +61,7 @@ Bed needs to be changable. Bed Types:
 - Aluminium Slats with Hardboard for cnc
 - Cutting board for vinyl cutter
 
-The bed moves up and down (Y direction) starting at the top and moving down for 3D printing toolheads.
+The bed moves up and down (Z direction) starting at the top and moving down for 3D printing toolheads.
 The bed is kinematically coupled to 2 of the vertical actuators and the center of a beam in a triangular formation. The beam is connected between the other 2 vertical actuators. All 4 vertical actuators provide the vertical frame supports for the machine.
 
 
