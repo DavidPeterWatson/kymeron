@@ -27,6 +27,18 @@ The gantry only moves in the x and y directions, while the bed moves in the z di
 Vertical linear actuators also form the vertical frame.
 Vertical linear actuators are C-Beam extrusions with stepper motors mounted at the bottom.
 Stepper motors at the bottom are also the feet for the printer. Placing steppers at the top will get in the way and will be inside the heated chamber. Placing vertical steppers at the bottom will be outsode the heated chamber an therefore cooler.
+z-axis front left
+z-axis front right
+z-axis back left
+z-axis back right
+
+The x axis (left to right motion) is controlled by 2 linear actuators. One across the front and the other across the back.
+x-axis front
+x-axis back
+
+The y axis (front to back motion) is controlled by 2 linear actuators. One across the left and the other across the right.
+y-axis left
+y-axis right
 
 
 ## Gantry
@@ -92,6 +104,9 @@ Only the 2 end toolheads will have 120ohm resistors
 octopus pro and end of the twisted pair.
 https://e2e.ti.com/support/interface-group/interface/f/interface-forum/850222/sn65hvd251-can-bus-termination
 
+### Tool Dock
+Each toolhead will park in its own tool dock.
+The tool docks are mounted to the top of the front and back x-axis 
 
 
 ### Filament toolheads
@@ -155,6 +170,13 @@ BigTreeTech Ocotopius Pro
 
 pin names
 https://teamgloomy.github.io/btt_octopus_pro_1.0_f429_pins.html
+
+Pin config
+- Remove usb C power selection jumper on MB
+- Set SPI mode for drivers on MB
+- Set en, step, dir pin nuames on printer cfg
+- Set Motor voltage pins on MB
+- 
 
 ### Power Supply
 
