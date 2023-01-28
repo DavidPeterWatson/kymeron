@@ -36,10 +36,13 @@ The x axis (left to right motion) is controlled by 2 linear actuators. One acros
 x-axis front
 x-axis back
 
+The x-axis beam spans from the front x-axis cart to the back x-axis cart.
+
 The y axis (front to back motion) is controlled by 2 linear actuators. One across the left and the other across the right.
 y-axis left
 y-axis right
 
+The y-axis beam spans from the left x-axis cart to the right x-axis cart.
 
 ## Gantry
 Crossed Gantry
@@ -241,10 +244,10 @@ Wall Socket -> 48V Power supply : Power supply cable
 24V Power supply -> BTT Octopus Pro Power: 16 agw, 2 core
 BTT Octopus Pro UPS Pin -> UPS Module : Provided Cable
 48V Power supply -> BTT Octopus Pro : 16 agw, 2 core
-BTT Octopus Pro -> EBB toolhead : power 18 agw, 2 core silicon, canh/l 22 agw
-BTT Octopus Pro -> Nema23 motors : 22 agw silicon wires shielded 4 core
-BTT Octopus Pro -> Chamber Heater : 
-BTT Octopus Pro -> Chamber temperature Sensor : Cat5e
+BTT Octopus Pro -> EBB toolhead : power 18 agw, 2 core silicon, canh/l 24 agw
+BTT Octopus Pro -> Nema23 motors : 22 agw silicon wires shielded 8 core (extra 2 for limit switch and 2 for cooling fan)
+BTT Octopus Pro -> Chamber Heater : 240V
+BTT Octopus Pro -> Chamber temperature Sensor : 24 agw 
 
 
 https://www.aliexpress.com/item/1005001732356744.html?spm=a2g0o.productlist.0.0.2a9668eehXHEF0&algo_pvid=c2463b0e-fe50-4855-8b70-8a39056fa019&algo_exp_id=c2463b0e-fe50-4855-8b70-8a39056fa019-3&pdp_ext_f=%7B%22sku_id%22%3A%2212000029019902332%22%7D&pdp_npi=2%40dis%21NZD%215.93%215.04%21%21%211.22%21%21%40210318cf16664135231422745e70c9%2112000029019902332%21sea&curPageLogUid=twhreFYSkeQF
