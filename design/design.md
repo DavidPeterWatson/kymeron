@@ -82,6 +82,7 @@ List of toolheads:
 - Vinyl Cutter toolhead
 - Paintbrush toolhead
 - Laser cutter toolhead 
+- Cake Icing toolhead
 - CNC toolhead (with vacuum brush head)
   - Connects to x and z gantries to provide extra stability.
   - Attaches to gantries from the corner
