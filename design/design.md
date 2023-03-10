@@ -99,14 +99,24 @@ Place toolheads with an umbilical cable near the corners, so that the umbilical 
 ### Each Toolhead
 Toolheads will be built on CANBUS boards
 https://biqu.equipment/products/bigtreetech-ebb-36-42-can-bus-for-connecting-klipper-expansion-device?variant=39760665182306
+https://github.com/bigtreetech/EBB
 This allows for many toolheads to be connected to a single CANBUS through BTT Octopus pro canbus bridge.
 toolhead changer does not need to change electronic connections.
 BTT EBB36/42
+
+add filament motion sensor
+https://www.printables.com/model/137999-diy-filament-motion-sensor
+
 
 CanBus terminal resistors
 Only the 2 end toolheads will have 120ohm resistors
 octopus pro and end of the twisted pair.
 https://e2e.ti.com/support/interface-group/interface/f/interface-forum/850222/sn65hvd251-can-bus-termination
+
+OR...
+
+Just use USB to connect to extruder mcu's
+
 
 ### Tool Dock
 Each toolhead will park in its own tool dock.

@@ -10,7 +10,6 @@ make menuconfig
 # from voron documentation https://docs.vorondesign.com/build/software/octopus_klipper.html
 sudo apt install make
 cd ~/klipper
-./scripts/install-octopi.sh
 make clean
 make menuconfig
 
