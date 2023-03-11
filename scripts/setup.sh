@@ -21,3 +21,10 @@ lsusb
 make flash FLASH_DEVICE=0483:df11
 
 ls /dev/serial/by-id
+
+
+
+## Install Klipper, Moonraker, Mainsail, Fluid and Octoprint with Kiauh
+
+git clone https://github.com/th33xitus/kiauh.git
+./kiauh/kiauh.sh
