@@ -115,7 +115,14 @@ https://e2e.ti.com/support/interface-group/interface/f/interface-forum/850222/sn
 
 OR...
 
-Just use USB to connect to extruder mcu's
+Just use USB to connect to extruder mcu's <- Current Preference
+
+Gcode for swapping extrudder https://www.klipper3d.org/G-Codes.html#extruder
+
+
+GCode for adjusting steppers indipendantly so that multiple steppers on a shared axis can be calibrated.
+https://www.klipper3d.org/G-Codes.html#force_move_1
+
 
 
 ### Tool Dock
