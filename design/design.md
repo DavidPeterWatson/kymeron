@@ -37,6 +37,7 @@ x-axis front
 x-axis back
 
 The x-axis beam spans from the front x-axis cart to the back x-axis cart.
+The x-axis beam sits under the y-axis and caries the tool heads. 
 
 The y axis (front to back motion) is controlled by 2 linear actuators. One across the left and the other across the right.
 y-axis left
