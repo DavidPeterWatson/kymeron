@@ -242,6 +242,8 @@ Total = 12.5 amps
 BIGTREETECH Relay V1.2 Automatic Shutdown Module
 https://www.youtube.com/watch?v=5wJff-hY90s
 
+https://github.com/bigtreetech/BIGTREETECH-Relay-V1.2/issues/1
+
 Normally open push button
 
 
