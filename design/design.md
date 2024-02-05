@@ -202,20 +202,22 @@ Pin config
 
 ### Power Supply
 
+
 #### 24 Volt Power Supply
 Mean Well LRS-350-24
 https://www.aliexpress.com/item/4000356081734.html
 
 Power requirements
 Drives the z steppers because they are slow 
-Motors:  4 x 2.5 amps = 10 amps
+Motors:  4 x 1.5 amps = 6 amps
 Motherboard = 1 amp
 Other = 2 Amp
 
-Sub Total = 13 amps
-Safety Factor 15%
-Total = 15 amps
-15A x 24V = 360 Watts
+
+Sub Total = 9 amps
+Safety Factor 10%
+Total = 10 amps
+10A x 24V = 240 Watts
 
 #### 48 Volt Power Supply
 SE-600-48 Mean Well 600W/12.5A/48V DC Single Output Power Supply
@@ -224,18 +226,23 @@ https://www.aliexpress.com/item/4000390635110.html
 
 Power requirement
 Drives the x & y steppers because they require higher speed
-HV Motors: 4 x 2.8 amps = 11.2 amps
+HV Motors: 4 x 2 amps = 8 amps
 
-Sub Total = 11.2 amps
-Safety Factor 20%
-Total = 13.5 amps
-
-13.5A x 48V = 648 Watts
-645 Watts
-
+Sub Total = 8 amps
 Safety Factor 10%
-Total = 12.5 amps
-600Watts
+Total = 10 amps
+
+10A x 48V = 480 Watts
+480 Watts
+
+
+#### AC Power Supply
+240 Watts - Mean Well LRS-350-24
+480 Watts - Mean Well SE-600-48
+
+Sub Total 720 Watts
+240 Volts 
+3 Amps
 
 
 ### Shutdown Module
