@@ -28,9 +28,9 @@ Vertical linear actuators also form the vertical frame.
 Vertical linear actuators are C-Beam extrusions with stepper motors mounted at the bottom.
 Stepper motors at the bottom are also the feet for the printer. Placing steppers at the top will get in the way and will be inside the heated chamber. Placing vertical steppers at the bottom will be outsode the heated chamber an therefore cooler.
 z-axis front left
-z-axis front right
 z-axis back left
 z-axis back right
+z-axis front right
 
 The x axis (left to right motion) is controlled by 2 linear actuators. One across the front and the other across the back.
 x-axis front
@@ -61,7 +61,7 @@ https://www.bunnings.co.nz/twinwall-2400-x-8mm-clear-h-jointer_p0124720
 ## Bed
 Bed is heated indirectly by air heater at the top of the printer. This has the affect of heating the entire insulated chamber.
 Bed needs to be changable. Bed Types:
-- Glass for 3d Printing
+- Glass or G10 for 3d Printing
 - Aluminium Slats with Hardboard for cnc
 - Cutting board for vinyl cutter
 
@@ -69,40 +69,40 @@ The bed moves up and down (Z direction) starting at the top and moving down for 
 The bed is kinematically coupled to 2 of the vertical actuators and the center of a beam in a triangular formation. The beam is connected between the other 2 vertical actuators. All 4 vertical actuators provide the vertical frame supports for the machine.
 
 
-## ToolHeads
+## Tools
 
-List of toolheads:
-- PLA Filament toolhead colour 1
-- PLA Filament toolhead colour 2
-- PVA Filament toolhead
-- ABS Filament toolhead
-- TPU Filament toolhead
-- Bed Level sensor toolhead
-- Camera toolhead
-- 3D Scanner toolhead
-- Vinyl Cutter toolhead
-- Paintbrush toolhead
-- Laser cutter toolhead 
-- Cake Icing toolhead
-- CNC toolhead (with vacuum brush head)
+List of tools:
+- PLA Filament tool colour 1
+- PLA Filament tool colour 2
+- PVA Filament toolh
+- ABS Filament tool
+- TPU Filament tool
+- Probe tool
+- Camera tool
+- 3D Scanner tool
+- Vinyl Cutter tool
+- Paintbrush tool
+- Laser cutter toolh
+- Cake Icing tool
+- CNC tool (with vacuum brush head)
   - Connects to x and z gantries to provide extra stability.
   - Attaches to gantries from the corner
-- Laser Cutter toolhead
-- Inkjet toolhead
-- Clay printer toolhead
-- Pick and Place Toolhead (Electrical Component placement)
-- Robotic arm toolhead
-- Electrical wire printer toolhead
-- Electrical Soldering toolhead
+- Laser Cutter tool
+- Inkjet tool
+- Clay printer tool
+- Pick and Place Tool (Electrical Component placement)
+- Robotic arm tool
+- Electrical wire printer tool
+- Electrical Soldering tool
 
-Place toolheads with an umbilical cable near the corners, so that the umbilical cables are pulled out of the way when the tool head is docked.
+Place tools with an umbilical cable near the corners, so that the umbilical cables are pulled out of the way when the tool head is docked.
 
-### Each Toolhead
-Toolheads will be built on CANBUS boards
+### Each Tool
+Tools will be built on CANBUS boards
 https://biqu.equipment/products/bigtreetech-ebb-36-42-can-bus-for-connecting-klipper-expansion-device?variant=39760665182306
 https://github.com/bigtreetech/EBB
-This allows for many toolheads to be connected to a single CANBUS through BTT Octopus pro canbus bridge.
-toolhead changer does not need to change electronic connections.
+This allows for many tools to be connected to a single CANBUS through BTT Octopus pro canbus bridge.
+Tool changer does not need to change electronic connections.
 BTT EBB36/42
 
 add filament motion sensor
@@ -110,7 +110,7 @@ https://www.printables.com/model/137999-diy-filament-motion-sensor
 
 
 CanBus terminal resistors
-Only the 2 end toolheads will have 120ohm resistors
+Only the 2 end tools will have 120ohm resistors
 octopus pro and end of the twisted pair.
 https://e2e.ti.com/support/interface-group/interface/f/interface-forum/850222/sn65hvd251-can-bus-termination
 
@@ -127,11 +127,11 @@ https://www.klipper3d.org/G-Codes.html#force_move_1
 
 
 ### Tool Dock
-Each toolhead will park in its own tool dock.
+Each tool will park in its own tool dock.
 The tool docks are mounted to the top of the front and back x-axis 
 
 
-### Filament toolheads
+### Filament tools
 - https://www.bondtech.se/product/lgx-ace-mosquito-printhead/
 
 Large diameter PTFE tube for filament. Allow hot air to flow out through PTFE tube to preheat filament.
@@ -140,17 +140,17 @@ https://www.aliexpress.com/item/32730855848.html?_randl_currency=NZD&_randl_ship
 
 Large diameter silicon tube to push
 
-Filament toolhead cabling summary
+Filament tool cabling summary
 - 18 agw, 2 core silicon
 - 22 agw twisted pair
 - 8mm PTFE Tube
 
 
-### Vinyl Cutter Toolhead
+### Vinyl Cutter Tool
 
 
 
-### Paintbrush Toolhead
+### Paintbrush Tool
 Extra 2 degrees of freedom to tilt angle of paint brush
 
 
@@ -159,11 +159,11 @@ Extra 2 degrees of freedom to tilt angle of paint brush
 ### Smoke Detection Sensor
 This provides feedback for possible fire so that the printer can be turned off and an alarm raised.
 
-### Toolhead level sensor
-A contact sensor provides micron accuracy of toolhead height for all toolheads. This allows the bed level sensor to be calibrated with all other sensors using the highest accuracy contact sensor. This accuracy is independant of bed type because all sensing is done with contact sensors.
+### Probe Tool
+A contact sensor provides micron accuracy of tool height for all tools. This allows the bed level sensor to be calibrated with all other sensors using the highest accuracy contact sensor. This accuracy is independant of bed type because all sensing is done with contact sensors.
 
-### Filament toolhead cleaner
-Separate component to the side for cleaning toolheads
+### Filament tool cleaner
+Separate component to the side for cleaning tools
 
 ### Cameras
 Take video and photographs
@@ -253,13 +253,8 @@ https://github.com/bigtreetech/BIGTREETECH-Relay-V1.2/issues/1
 
 Normally open push button
 
-
 ### UPS Module
 BTT UPS 24V V1.0 Resume Printing While Power Off Module
-
-
-
-
 
 ## Wiring
 
