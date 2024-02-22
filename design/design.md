@@ -281,3 +281,13 @@ Wire Gauge
 18 agw -> 16 Amps
 22 agw -> 7 Amps
 24 agw -> 3.5 Amps
+
+## Homing
+Override homing
+Home X Axis first
+Move along X to avoid probe carriage
+Home Y Axis
+Dock Probe carriage
+Home Z
+
+
