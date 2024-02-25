@@ -61,9 +61,14 @@ https://www.bunnings.co.nz/twinwall-2400-x-8mm-clear-h-jointer_p0124720
 ## Bed
 Bed is heated indirectly by air heater at the top of the printer. This has the affect of heating the entire insulated chamber.
 Bed needs to be changable. Bed Types:
-- Glass or G10 for 3d Printing
+- Glass or G10 for 3D Printing
 - Aluminium Slats with Hardboard for cnc
 - Cutting board for vinyl cutter
+
+The 3D Printing bed is heated by a 220V silicone heating mat.
+It will use HE0 (PA2) on the BTT Octopus pro to control the SSR
+https://docs.vorondesign.com/build/electrical/v2_octopus_wiring.html#ssr-wiring
+
 
 The bed moves up and down (Z direction) starting at the top and moving down for 3D printing toolheads.
 The bed is kinematically coupled to 2 of the vertical actuators and the center of a beam in a triangular formation. The beam is connected between the other 2 vertical actuators. All 4 vertical actuators provide the vertical frame supports for the machine.
