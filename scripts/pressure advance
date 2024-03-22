@@ -1,0 +1,15 @@
+TUNING_TOWER COMMAND=SET_PRESSURE_ADVANCE PARAMETER=ADVANCE START=0 FACTOR=.005
+
+
+layer 1
+pressure_advance: 0.001500
+pressure_advance_smooth_time: 0.040000
+
+layer 167
+pressure_advance: 0.249000
+pressure_advance_smooth_time: 0.040000
+
+
+
+pressure_advance = <start> + <measured_height> * <factor>
+pa = 0 + 11.6 * 0.005 = 0.058000
