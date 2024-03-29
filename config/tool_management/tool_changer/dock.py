@@ -6,6 +6,7 @@ class Dock:
         self.move_z = config.get('safe_zd')
         self.load_y = config.get('load_yd')
         self.load_x = config.get('load_xd')
+        self.loading_speed = config.get('loading_speed')
 
 
 def load_config_prefix(config):
