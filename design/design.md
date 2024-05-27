@@ -1,32 +1,35 @@
-# 3D Printer Design
+# Kymeron Design
 
-The purpose of this document is to provide details for design decision sand references
+The purpose of this document is to provide details for design decisions and references for Kymeron
 
 ## General Design
 
-Crossed Gantry
+Kymeron is based on a crossed gantry 3d printer design. Different tools are loaded and unloaded by moving the carriage off the gantry rather than attaching a tool to the carriage.
+
+## Name
+The name "Kymeron" hints at the mythical Chimera which is a combination of many creatures. This maker machine is combination of many machines. The "-ron" suffix is inspired by the "Voron" project.
+
 
 ## Chamber
 Fully enclosed and insulated chamber.
 Possibly clear to provide visibility of operation to increase ability to fix. Visible feedback.
-Vacuum holes at the base of chamber to suck of cnc debris.
+Vacuum holes at the base of chamber to suck out cnc debris.
 Suck air in the bottom of the chamber and introduce hot air near the top.
-The temperature of chamber and 3D printed polymers needs to be kept just below the Glass transition temperature to increase the bonding.
+The temperature of chamber and 3D printed polymers needs to be kept just below the glass transition temperature to increase the bonding.
 https://3dsolved.com/3d-filament-glass-transition-temperatures/
 
 
 ## Frame
+The actuators that drive the gantry beams are also the frame for the machine.
+The gantry only moves in the x and y directions, while the bed moves in the z direction.
+
 2 motors for each horizontal axis increases force applied to each axis.
 Nema 23 motors for higher forces
 BTT Octopus pro with TMC5160 Pro so that Voltage can be increased to 48V for higher speeds and higher amps.
 
-The actuators that drive the gantry beams are also the frame for the machine.
-The gantry only moves in the x and y directions, while the bed moves in the z direction.
-
 4 x z-axis linear actuators to move the bed vertically.
 Vertical linear actuators also form the vertical frame.
-Vertical linear actuators are C-Beam extrusions with stepper motors mounted at the bottom.
-Stepper motors at the bottom are also the feet for the printer. Placing steppers at the top will get in the way and will be inside the heated chamber. Placing vertical steppers at the bottom will be outsode the heated chamber an therefore cooler.
+Vertical linear actuators are C-Beam extrusions with stepper motors mounted at the top.
 z-axis front left
 z-axis back left
 z-axis back right
@@ -35,35 +38,33 @@ z-axis front right
 The x axis (left to right motion) is controlled by 2 linear actuators. One across the front and the other across the back.
 x-axis front
 x-axis back
-
 The x-axis beam spans from the front x-axis cart to the back x-axis cart.
-The x-axis beam sits under the y-axis and caries the tool heads. 
+The x-axis beam sits under the y-axis and caries the tool carriages. 
 
 The y axis (front to back motion) is controlled by 2 linear actuators. One across the left and the other across the right.
 y-axis left
 y-axis right
+The y-axis beam spans from the left y-axis cart to the right y-axis cart.
 
-The y-axis beam spans from the left x-axis cart to the right x-axis cart.
 
 ## Gantry
 Crossed Gantry
-Each toolhead has its own gantry cart. Only 1 degree of movement requires engaging.
-
-
+Each tool has its own carriage. Only 1 degree of movement requires engaging.
+A special carriage made from a cbeam gantry plate connects to the x-axis beam above it with linear wheels and it connects to the y-axis beam below it with linear wheels. 2 extra wheels (bearings only) will engage with a nobby on each carriage.
 
 ## Cover
 Twin wall polycarbonate roofing
 https://www.bunnings.co.nz/twinwall-8-x-2400-x-610mm-clear-polycarbonate-roofing_p0124718?store=9474&gclid=Cj0KCQjwteOaBhDuARIsADBqRehCLp3DZUIPm4RK3flJGLu8eTeC2iw4wb14_lYqLewhmDrlqb3sHxsaAi3mEALw_wcB&gclsrc=aw.ds
 
-join
+Walls that are not long enough can be joined with the following joiner.
 https://www.bunnings.co.nz/twinwall-2400-x-8mm-clear-h-jointer_p0124720
 
+
 ## Bed
-Bed is heated indirectly by air heater at the top of the printer. This has the affect of heating the entire insulated chamber.
 Bed needs to be changable. Bed Types:
-- Glass or G10 for 3D Printing
-- Aluminium Slats with Hardboard for cnc
-- Cutting board for vinyl cutter
+- Heated Glass for 3D Printing
+- MDF board for cnc, vinyl cutter and pottery
+- Honeycomb bed for laser cutting
 
 The 3D Printing bed is heated by a 220V silicone heating mat.
 It will use HE0 (PA2) on the BTT Octopus pro to control the SSR
@@ -71,15 +72,16 @@ https://docs.vorondesign.com/build/electrical/v2_octopus_wiring.html#ssr-wiring
 
 
 The bed moves up and down (Z direction) starting at the top and moving down for 3D printing toolheads.
-The bed is kinematically coupled to 2 of the vertical actuators and the center of a beam in a triangular formation. The beam is connected between the other 2 vertical actuators. All 4 vertical actuators provide the vertical frame supports for the machine.
+Quad gantry leveling is used to align the bed.
+All 4 vertical actuators provide the vertical frame supports for the machine.
 
 
 ## Tools
-
 List of tools:
 - PLA Filament tool colour 1
 - PLA Filament tool colour 2
-- PVA Filament toolh
+- PETG Filament tool
+- PVA Filament tool
 - ABS Filament tool
 - TPU Filament tool
 - Probe tool
@@ -100,7 +102,7 @@ List of tools:
 - Electrical wire printer tool
 - Electrical Soldering tool
 
-Place tools with an umbilical cable near the corners, so that the umbilical cables are pulled out of the way when the tool head is docked.
+Umbilical cords carry electrical wires, filament, air pipes and whatever else is needed from the center of the machine overhead to each tool. PTFE pipes will be used for the umbilical cords.
 
 ### Each Tool
 Tools will be built on CANBUS boards
@@ -115,24 +117,18 @@ https://www.printables.com/model/137999-diy-filament-motion-sensor
 
 
 CanBus terminal resistors
-Only the 2 end tools will have 120ohm resistors
-octopus pro and end of the twisted pair.
+Octopus pro must have 120ohm resistor
+Add 120ohm resistors to the end of the twisted pair.
 https://e2e.ti.com/support/interface-group/interface/f/interface-forum/850222/sn65hvd251-can-bus-termination
-
-OR...
-
-Just use USB to connect to extruder mcu's <- Current Preference
-
-Gcode for swapping extrudder https://www.klipper3d.org/G-Codes.html#extruder
 
 
 GCode for adjusting steppers indipendantly so that multiple steppers on a shared axis can be calibrated.
 https://www.klipper3d.org/G-Codes.html#force_move_1
 
 
-
-### Tool Dock
-Each tool will park in its own tool dock.
+### Tool Docks and Berth
+There are 2 docks. One along the front and another along the back.
+Each tool will park in its own tool berth along one of the docks.
 The tool docks are mounted to the top of the front and back x-axis 
 
 
