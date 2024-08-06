@@ -52,6 +52,9 @@ Crossed Gantry
 Each tool has its own carriage. Only 1 degree of movement requires engaging.
 A special carriage made from a cbeam gantry plate connects to the x-axis beam above it with linear wheels and it connects to the y-axis beam below it with linear wheels. 2 extra wheels (bearings only) will engage with a nobby on each carriage.
 
+RGB LED Strip across the underside of the y-axis gantry. Umbilical cord from the top center down to center of the y-axis gantry.
+
+
 ## Cover
 Twin wall polycarbonate roofing
 https://www.bunnings.co.nz/twinwall-8-x-2400-x-610mm-clear-polycarbonate-roofing_p0124718?store=9474&gclid=Cj0KCQjwteOaBhDuARIsADBqRehCLp3DZUIPm4RK3flJGLu8eTeC2iw4wb14_lYqLewhmDrlqb3sHxsaAi3mEALw_wcB&gclsrc=aw.ds
@@ -167,7 +170,7 @@ A contact sensor provides micron accuracy of tool height for all tools. This all
 Separate component to the side for cleaning tools
 
 ### Cameras
-Take video and photographs
+Record video, timelapse and photographs
 
 ### Chamber Heater
 Heating element
@@ -189,7 +192,7 @@ Chamber temperature sensor near the bottom
 Polycarbonate sheeting for cover
 
 ### Motherboard
-BigTreeTech Ocotopius Pro
+BigTreeTech Octopus Pro
 
 pin names
 https://teamgloomy.github.io/btt_octopus_pro_1.0_f429_pins.html
