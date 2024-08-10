@@ -13,7 +13,14 @@ install-tmc-autotune:
 	wget -O - https://raw.githubusercontent.com/andrewmcgr/klipper_tmc_autotune/main/install.sh | bash
 
 install-carriage-changer:
-	clone https://github.com/DavidPeterWatson/klipper-carriage-changer.git
+	cd ~
+	git clone https://github.com/DavidPeterWatson/klipper-carriage-changer.git
+	cd klipper-carriage-changer
+	./install.sh
 
 install-tool-changer:
 	wget -O - https://raw.githubusercontent.com/viesturz/klipper-toolchanger/main/install.sh | bash
+
+install-kymeron:
+	cd ~
+	git clone https://github.com/DavidPeterWatson/Kymeron.git
