@@ -166,7 +166,7 @@ This provides feedback for possible fire so that the printer can be turned off a
 ### Probe Tool
 A contact sensor provides micron accuracy of tool height for all tools. This allows the bed level sensor to be calibrated with all other sensors using the highest accuracy contact sensor. This accuracy is independant of bed type because all sensing is done with contact sensors.
 
-### Filament tool cleaner
+### Filament tool brush
 Separate component to the side for cleaning tools
 
 ### Cameras
