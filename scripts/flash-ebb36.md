@@ -17,6 +17,8 @@ lsusb
 <!-- 0483:df11 -->
 
 enter DFU mode on board
+lsusb
+<!-- Bus 006 Device 008: ID 0483:df11 STMicroelectronics STM Device in DFU Mode -->
 
 sudo service klipper stop
 make flash FLASH_DEVICE=/dev/serial/by-id/usb-Klipper_stm32g0b1xx_18003F000C50425539393020-if00
