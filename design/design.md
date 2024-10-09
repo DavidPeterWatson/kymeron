@@ -200,9 +200,20 @@ https://teamgloomy.github.io/btt_octopus_pro_1.0_f429_pins.html
 Pin config
 - Remove usb C power selection jumper on MB
 - Set SPI mode for drivers on MB
-- Set en, step, dir pin nuames on printer cfg
+- Set en, step, dir pin names on printer cfg
 - Set Motor voltage pins on MB
-- 
+
+
+Use btt pi gpio pins for carriage sensors.
+Each carriage has a switch that serves a sensor that determines that the carriage is loaded.
+
+The btt octopus pro endstop switches will be used for stallguard emergency stops.
+If diag pins can be used for sensorless homing and emergency stop then do that.
+Otherwise repurpose other pins on the board for endstops. Only 3 endstops are needed.
+
+Use PB7 for touch probe
+
+
 
 ### Power Supply
 
