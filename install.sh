@@ -2,6 +2,7 @@
 
 KLIPPER_PATH="${HOME}/klipper"
 KYMERON_PATH="${HOME}/kymeron"
+PRINTER_DATA_PATH="${HOME}/printer_data"
 
 set -eu
 export LC_ALL=C
@@ -48,7 +49,7 @@ function link_extension {
     ln -srfn "${KYMERON_PATH}/extras/berth.py" "${KLIPPER_PATH}/klippy/extras/berth.py"
     ln -srfn "${KYMERON_PATH}/extras/dock.py" "${KLIPPER_PATH}/klippy/extras/dock.py"
     ln -srfn "${KYMERON_PATH}/extras/gcode_shell_command.py" "${KLIPPER_PATH}/klippy/extras/gcode_shell_command.py"
-    ln -srfn "${KYMERON_PATH}/kymeron_config" "${KLIPPER_PATH}/printer_data/kymeron_config"
+    ln -srfn "${KYMERON_PATH}/kymeron_config" "${PRINTER_DATA_PATH}/kymeron_config"
 }
 
 function restart_klipper {
