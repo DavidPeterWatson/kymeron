@@ -5,6 +5,7 @@ class EmergencyStop:
     def __init__(self, config):
         self.printer = config.get_printer()
         self.name = config.get_name().split(' ')[-1]
+        buttons = self.printer.load_object(config, "buttons")
         
         # Register kill button
         self.register_button(config, 'kill_pin', self.kill_callback)
