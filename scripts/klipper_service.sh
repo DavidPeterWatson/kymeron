@@ -1,0 +1,2 @@
+systemctl restart klipper
+systemctl status klipper
