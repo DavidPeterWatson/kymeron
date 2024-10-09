@@ -25,6 +25,7 @@ class EmergencyStop:
 
     def kill_callback(self, eventtime):
         self.printer.invoke_shutdown("Shutdown due to emergency stop!")
+        
 
 def load_config_prefix(config):
     return EmergencyStop(config)
