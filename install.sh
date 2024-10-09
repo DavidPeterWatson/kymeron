@@ -49,7 +49,7 @@ function link_extension {
     ln -srfn "${KYMERON_PATH}/extras/berth.py" "${KLIPPER_PATH}/klippy/extras/berth.py"
     ln -srfn "${KYMERON_PATH}/extras/dock.py" "${KLIPPER_PATH}/klippy/extras/dock.py"
     ln -srfn "${KYMERON_PATH}/extras/gcode_shell_command.py" "${KLIPPER_PATH}/klippy/extras/gcode_shell_command.py"
-    ln -srfn "${KYMERON_PATH}/kymeron_config" "${PRINTER_DATA_PATH}/kymeron_config"
+    ln -srfn "${KYMERON_PATH}/kymeron_config" "${PRINTER_DATA_PATH}/config/kymeron_config"
 }
 
 function restart_klipper {
