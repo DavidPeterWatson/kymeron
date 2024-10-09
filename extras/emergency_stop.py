@@ -6,7 +6,7 @@ class EmergencyStop:
         self.printer = config.get_printer()
         self.name = config.get_name().split(' ')[-1]
         buttons = self.printer.load_object(config, "buttons")
-        
+
         # Register kill button
         self.register_button(config, 'kill_pin', self.kill_callback)
         self.printer.add_object('emergency_stop_' + self.name, self)
@@ -18,6 +18,7 @@ class EmergencyStop:
         buttons = self.printer.lookup_object("buttons")
         if config.get('analog_range', None) is None:
             buttons.register_buttons([pin], callback)
+            return
         amin, amax = config.getfloatlist('analog_range', count=2)
         pullup = config.getfloat('analog_pullup_resistor', 4700., above=0.)
         buttons.register_adc_button(pin, amin, amax, pullup, callback)
