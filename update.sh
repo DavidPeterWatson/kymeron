@@ -1,3 +1,3 @@
 #!/bin/bash
 git pull
-install.sh
+./install.sh
