@@ -24,7 +24,7 @@ class EmergencyStop:
         buttons.register_adc_button(pin, amin, amax, pullup, callback)
 
     def kill_callback(self, eventtime):
-        self.printer.invoke_shutdown(f"Shutdown due to {self.name} emergency stop!")
+        self.printer.invoke_shutdown("Shutdown due to emergency stop!")
 
 def load_config_prefix(config):
     return EmergencyStop(config)
