@@ -1,7 +1,7 @@
 #!/bin/bash
 
 KLIPPER_PATH="${HOME}/klipper"
-KYMERON_PATH="${HOME}/Kymeron"
+KYMERON_PATH="${HOME}/kymeron"
 
 set -eu
 export LC_ALL=C
@@ -27,16 +27,16 @@ function check_download {
     kymeron_base_name="$(basename ${KYMERON_PATH})"
 
     if [ ! -d "${KYMERON_PATH}" ]; then
-        echo "[DOWNLOAD] Downloading Kymeron repository..."
-        if git -C $carriage_changer_dir_name clone https://github.com/DavidPeterWatson/Kymeron.git $kymeron_base_name; then
+        echo "[DOWNLOAD] Downloading kymeron repository..."
+        if git -C $carriage_changer_dir_name clone https://github.com/DavidPeterWatson/kymeron.git $kymeron_base_name; then
             chmod +x ${KYMERON_PATH}/install.sh
             printf "[DOWNLOAD] Download complete!\n\n"
         else
-            echo "[ERROR] Download of Kymeron git repository failed!"
+            echo "[ERROR] Download of kymeron git repository failed!"
             exit -1
         fi
     else
-        printf "[DOWNLOAD] Kymeron repository already found locally. Continuing...\n\n"
+        printf "[DOWNLOAD] kymeron repository already found locally. Continuing...\n\n"
     fi
 }
 
@@ -53,7 +53,7 @@ function restart_klipper {
 
 
 printf "\n======================================\n"
-echo "- Kymeron install script -"
+echo "- kymeron install script -"
 printf "======================================\n\n"
 
 

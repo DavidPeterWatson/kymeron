@@ -23,7 +23,7 @@ install-tool-changer:
 
 install-kymeron:
 	cd ~
-	git clone https://github.com/DavidPeterWatson/Kymeron.git
+	git clone https://github.com/DavidPeterWatson/kymeron.git
 
 setup_can:
 	sudo touch /etc/network/interfaces.d/can0
