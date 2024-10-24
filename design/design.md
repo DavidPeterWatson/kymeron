@@ -56,11 +56,9 @@ RGB LED Strip across the underside of the y-axis gantry. Umbilical cord from the
 
 
 ## Cover
-Twin wall polycarbonate roofing
-https://www.bunnings.co.nz/twinwall-8-x-2400-x-610mm-clear-polycarbonate-roofing_p0124718?store=9474&gclid=Cj0KCQjwteOaBhDuARIsADBqRehCLp3DZUIPm4RK3flJGLu8eTeC2iw4wb14_lYqLewhmDrlqb3sHxsaAi3mEALw_wcB&gclsrc=aw.ds
+[Twin wall polycarbonate roofing](https://www.bunnings.co.nz/twinwall-8-x-2400-x-610mm-clear-polycarbonate-roofing_p0124718?store=9474&gclid=Cj0KCQjwteOaBhDuARIsADBqRehCLp3DZUIPm4RK3flJGLu8eTeC2iw4wb14_lYqLewhmDrlqb3sHxsaAi3mEALw_wcB&gclsrc=aw.ds)
 
-Walls that are not long enough can be joined with the following joiner.
-https://www.bunnings.co.nz/twinwall-2400-x-8mm-clear-h-jointer_p0124720
+Walls that are not long enough can be joined with the a [joiner](https://www.bunnings.co.nz/twinwall-2400-x-8mm-clear-h-jointer_p0124720).
 
 
 ## Bed
@@ -137,6 +135,7 @@ The tool docks are mounted to the top of the front and back x-axis
 
 ### Filament tools
 - https://www.bondtech.se/product/lgx-ace-mosquito-printhead/
+- BTT H2 V2S Revo Extruder
 
 Large diameter PTFE tube for filament. Allow hot air to flow out through PTFE tube to preheat filament.
 
@@ -151,7 +150,7 @@ Filament tool cabling summary
 
 
 ### Vinyl Cutter Tool
-
+Cricut cutter
 
 
 ### Paintbrush Tool
@@ -220,19 +219,22 @@ Use PB7 for touch probe
 
 #### 24 Volt Power Supply
 Mean Well LRS-350-24
+Mac 350 Watts
 https://www.aliexpress.com/item/4000356081734.html
 
 Power requirements
 Drives the z steppers because they are slow 
-Motors:  4 x 1.5 amps = 6 amps
+Motors:  4 x 1.2 amps = 4.8 Amps
 Motherboard = 1 amp
-Other = 2 Amp
+Other = 2 Amps
+Filament Dryer Heater = 4 Amps
 
 
-Sub Total = 9 amps
+Sub Total = 11.8 amps
 Safety Factor 10%
-Total = 10 amps
-10A x 24V = 240 Watts
+Total = 13 amps
+13A x 24V = 312 Watts
+350 W - 312 W = 38 Watts remaining
 
 #### 48 Volt Power Supply
 SE-600-48 Mean Well 600W/12.5A/48V DC Single Output Power Supply
@@ -271,6 +273,9 @@ Normally open push button
 ### UPS Module
 BTT UPS 24V V1.0 Resume Printing While Power Off Module
 
+### Filament Dryer
+
+
 ## Wiring
 
 Wall Socket -> Shutdown Module : Power supply cable
@@ -285,7 +290,9 @@ BTT Octopus Pro UPS Pin -> UPS Module : Provided Cable
 BTT Octopus Pro -> EBB toolhead : power 18 agw, 2 core silicon, canh/l 24 agw
 BTT Octopus Pro -> Nema23 motors : 22 agw silicon wires shielded 8 core (extra 2 for limit switch and 2 for cooling fan)
 BTT Octopus Pro -> Chamber Heater : 240V
-BTT Octopus Pro -> Chamber temperature Sensor : 24 agw 
+BTT Octopus Pro -> Chamber temperature Sensor : 24 agw
+BTT Octopus Pro -> Filament Dryer Temperature Sensor : 24 agw
+BTT Octopus Pro -> Filament Dryer fan : 24 agw
 
 
 https://www.aliexpress.com/item/1005001732356744.html?spm=a2g0o.productlist.0.0.2a9668eehXHEF0&algo_pvid=c2463b0e-fe50-4855-8b70-8a39056fa019&algo_exp_id=c2463b0e-fe50-4855-8b70-8a39056fa019-3&pdp_ext_f=%7B%22sku_id%22%3A%2212000029019902332%22%7D&pdp_npi=2%40dis%21NZD%215.93%215.04%21%21%211.22%21%21%40210318cf16664135231422745e70c9%2112000029019902332%21sea&curPageLogUid=twhreFYSkeQF
