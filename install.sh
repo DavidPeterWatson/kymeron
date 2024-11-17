@@ -29,7 +29,7 @@ function check_download {
 
     if [ ! -d "${KYMERON_PATH}" ]; then
         echo "[DOWNLOAD] Downloading kymeron repository..."
-        if git -C $carriage_changer_dir_name clone https://github.com/DavidPeterWatson/kymeron.git $kymeron_base_name; then
+        if git -C $kymeron_dir_name clone https://github.com/DavidPeterWatson/kymeron.git $kymeron_base_name; then
             chmod +x ${KYMERON_PATH}/install.sh
             printf "[DOWNLOAD] Download complete!\n\n"
         else
