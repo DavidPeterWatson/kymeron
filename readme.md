@@ -1,3 +1,2 @@
-Installing OS of SD card
 
-brew install --cask raspberry-pi-imager
+wget -O - https://raw.githubusercontent.com/DavidPeterWatson/kymeron/install.sh | bash
