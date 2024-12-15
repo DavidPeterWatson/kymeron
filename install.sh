@@ -44,6 +44,7 @@ function check_download {
 function link_extension {
     echo "[INSTALL] Linking extension to Klipper..."
     ln -srfn "${KYMERON_PATH}/extras/emergency_stop.py" "${KLIPPER_PATH}/klippy/extras/emergency_stop.py"
+    ln -srfn "${KYMERON_PATH}/extras/extruder_management.py" "${KLIPPER_PATH}/klippy/extras/extruder_management.py"
     ln -srfn "${KYMERON_PATH}/extras/carriage_changer.py" "${KLIPPER_PATH}/klippy/extras/carriage_changer.py"
     ln -srfn "${KYMERON_PATH}/extras/carriage.py" "${KLIPPER_PATH}/klippy/extras/carriage.py"
     ln -srfn "${KYMERON_PATH}/extras/berth.py" "${KLIPPER_PATH}/klippy/extras/berth.py"
