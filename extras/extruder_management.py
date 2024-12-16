@@ -6,6 +6,8 @@ class ExtruderManagement:
         self.purge_length = float(config.get('purge_length') or 10)
         self.brush_movement = float(config.get('brush_movement') or 20)
         self.brush_shift = float(config.get('brush_shift') or 10)
+        self.retract_xy_wiggle = float(config.get('retract_xy_wiggle') or 2)
+        self.retract_z = float(config.get('retract_z') or 0.1)
         self.printer.add_object('extruder_management', self)
 
 
