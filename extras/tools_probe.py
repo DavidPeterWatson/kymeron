@@ -248,6 +248,7 @@ class PrinterProbeMultiAxis:
             liftpos[axis] = pos[axis] - sense * rocking_retract_dist
             self._move(liftpos, lift_speed)
             rocks += 1
+        self.gcode.respond_info("Probe made contact at %.6f,%.6f,%.6f" % (pos[0], pos[1], pos[2]))
         return pos
 
     def _probe(self, speed, axis, sense, max_distance):
@@ -261,8 +262,8 @@ class PrinterProbeMultiAxis:
                 reason += HINT_TIMEOUT
             raise self.printer.command_error(reason)
         # self.gcode.respond_info("probe at %.3f,%.3f is z=%.6f"
-        self.gcode.respond_info("Probe made contact at %.6f,%.6f,%.6f"
-                                % (epos[0], epos[1], epos[2]))
+        # self.gcode.respond_info("Probe made contact at %.6f,%.6f,%.6f"
+        #                         % (epos[0], epos[1], epos[2]))
         return epos[:3]
 
     def _get_target_position(self, axis, sense, max_distance):
