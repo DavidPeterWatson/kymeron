@@ -315,6 +315,7 @@ class PrinterProbeMultiAxis:
         (axis, sense) = direction_types[direction]
 
         logging.info("run_probe axis = %d, sense = %d" % (axis, sense))
+        self.gcode.respond_info(f"Probing {axis} axis with {sense} sense")
 
         lift_speed = self.get_lift_speed(gcmd)
         sample_count = gcmd.get_int("SAMPLES",
