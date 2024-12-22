@@ -16,7 +16,7 @@ position can be negative).
 """
 
 
-class ToolsCalibrate:
+class ToolsProbe:
     def __init__(self, config):
         self.printer = config.get_printer()
         self.name = config.get_name()
@@ -380,4 +380,4 @@ class ProbeEndstopWrapper:
 
 
 def load_config(config):
-    return ToolsCalibrate(config)
+    return ToolsProbe(config)
