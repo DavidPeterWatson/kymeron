@@ -235,6 +235,21 @@ class PrinterProbeMultiAxis:
             return gcmd.get_float("LIFT_SPEED", self.lift_speed, above=0.)
         return self.lift_speed
 
+    def _rocking_probe(self, probe_start, sample_retract_dist, lift_speed, speed, axis, sense, max_distance):
+        rocking_count = 4
+        rocks = 0
+        rocking_retract_dist = sample_retract_dist
+        rocking_speed = speed
+        while rocks < rocking_count:
+            pos = self._probe(rocking_speed, axis, sense, max_distance)
+            rocking_retract_dist = rocking_retract_dist * 0.5
+            rocking_speed = rocking_speed * 0.5
+            liftpos = probe_start
+            liftpos[axis] = pos[axis] - sense * rocking_retract_dist
+            self._move(liftpos, lift_speed)
+            rocks += 1
+        return pos
+
     def _probe(self, speed, axis, sense, max_distance):
         phoming = self.printer.lookup_object('homing')
         pos = self._get_target_position(axis, sense, max_distance)
@@ -317,7 +332,7 @@ class PrinterProbeMultiAxis:
         positions = []
         while len(positions) < sample_count:
             # Probe position
-            pos = self._probe(speed, axis, sense, max_distance)
+            pos = self._rocking_probe(probe_start, sample_retract_dist, lift_speed, speed, axis, sense, max_distance)
             positions.append(pos)
             # Check samples tolerance
             axis_positions = [p[axis] for p in positions]
