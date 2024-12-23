@@ -237,6 +237,7 @@ class PrinterProbeMultiAxis:
         return self.lift_speed
 
     def _rocking_probe(self, probe_start, speed, axis, sense, max_distance):
+        toolhead = self.printer.lookup_object('toolhead')
         rocking_count = 3
         rocks = 0
         rocking_speed = speed
@@ -248,7 +249,7 @@ class PrinterProbeMultiAxis:
             liftpos = probe_start
             liftpos[axis] = pos[axis] - sense * rocking_retract_dist
             self._move(liftpos, rocking_lift_speed)
-            time.sleep(1)
+            toolhead.dwell(1000)
             rocks += 1
         self.gcode.respond_info("Probe made contact at %.6f,%.6f,%.6f" % (pos[0], pos[1], pos[2]))
         return pos
