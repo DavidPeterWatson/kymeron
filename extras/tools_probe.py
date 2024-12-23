@@ -248,7 +248,7 @@ class PrinterProbeMultiAxis:
             liftpos = probe_start
             liftpos[axis] = pos[axis] - sense * rocking_retract_dist
             self._move(liftpos, rocking_lift_speed)
-            time.sleep(0.5)
+            time.sleep(1)
             rocks += 1
         self.gcode.respond_info("Probe made contact at %.6f,%.6f,%.6f" % (pos[0], pos[1], pos[2]))
         return pos
