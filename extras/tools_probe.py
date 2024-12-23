@@ -236,14 +236,14 @@ class PrinterProbeMultiAxis:
         return self.lift_speed
 
     def _rocking_probe(self, probe_start, speed, axis, sense, max_distance):
-        rocking_count = 4
+        rocking_count = 3
         rocks = 0
         rocking_speed = speed
         while rocks < rocking_count:
             pos = self._probe(rocking_speed, axis, sense, max_distance)
-            rocking_speed = rocking_speed * 0.25
-            rocking_retract_dist = rocking_speed * 2.0
-            rocking_lift_speed = rocking_speed * 3.0
+            rocking_speed = rocking_speed * 0.2
+            rocking_retract_dist = rocking_speed * 3.0
+            rocking_lift_speed = rocking_speed * 2.0
             liftpos = probe_start
             liftpos[axis] = pos[axis] - sense * rocking_retract_dist
             self._move(liftpos, rocking_lift_speed)
