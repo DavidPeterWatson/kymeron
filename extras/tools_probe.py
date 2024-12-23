@@ -4,6 +4,7 @@
 # Sourced from https://github.com/ben5459/Klipper_ToolChanger/blob/master/probe_multi_axis.py
 
 import logging
+import time
 
 direction_types = {'x+': [0, +1], 'x-': [0, -1], 'y+': [1, +1], 'y-': [1, -1],
                    'z+': [2, +1], 'z-': [2, -1]}
@@ -241,12 +242,13 @@ class PrinterProbeMultiAxis:
         rocking_speed = speed
         while rocks < rocking_count:
             pos = self._probe(rocking_speed, axis, sense, max_distance)
-            rocking_speed = rocking_speed * 0.2
             rocking_retract_dist = rocking_speed * 3.0
-            rocking_lift_speed = rocking_speed * 2.0
+            rocking_lift_speed = rocking_speed * 4.0
             liftpos = probe_start
             liftpos[axis] = pos[axis] - sense * rocking_retract_dist
             self._move(liftpos, rocking_lift_speed)
+            time.sleep(0.5)
+            rocking_speed = rocking_speed * 0.2
             rocks += 1
         self.gcode.respond_info("Probe made contact at %.6f,%.6f,%.6f" % (pos[0], pos[1], pos[2]))
         return pos
