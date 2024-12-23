@@ -237,7 +237,6 @@ class PrinterProbeMultiAxis:
         return self.lift_speed
 
     def _rocking_probe(self, probe_start, speed, axis, sense, max_distance):
-        toolhead = self.printer.lookup_object('toolhead')
         rocking_count = 3
         rocks = 0
         rocking_speed = speed
