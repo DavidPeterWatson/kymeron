@@ -19,8 +19,8 @@ class BedProbe:
         buttons.register_buttons([pin], self._button_handler)
 
         #Register with the endstop
-        self.endstop = self.printer.load_object(config, "tool_probe_endstop")
-        self.endstop.add_probe(config, self)
+        # self.endstop = self.printer.load_object(config, "tool_probe_endstop")
+        # self.endstop.add_probe(config, self)
 
     def _button_handler(self, eventtime, is_triggered):
         self.endstop.note_probe_triggered(self, eventtime, is_triggered)
