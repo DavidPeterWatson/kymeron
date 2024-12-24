@@ -22,5 +22,5 @@ class CarriageChanger:
         # for section in carriage_movement.get_prefix_sections(''):
         #     self.printer.load_object(carriage_movement, section.get_name())
 
-def load_config_prefix(config):
+def load_config(config):
     return CarriageChanger(config)

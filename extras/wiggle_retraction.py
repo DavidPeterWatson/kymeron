@@ -1,4 +1,4 @@
-class Retraction:
+class WiggleRetraction:
     def __init__(self, config):
         self.printer = config.get_printer()
         self.hot_zone_retract_length = float(config.get('hot_zone_retract_length') or 20)
@@ -9,4 +9,4 @@ class Retraction:
 
 
 def load_config(config):
-    return Retraction(config)
+    return WiggleRetraction(config)
