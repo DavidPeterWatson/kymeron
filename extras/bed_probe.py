@@ -6,7 +6,7 @@ from . import probe
 class BedProbe:
     def __init__(self, config):
         self.printer = config.get_printer()
-        self.name = config.get_name()
+        self.name = 'bed_probe'
         self.mcu_probe = probe.ProbeEndstopWrapper(config)
         self.probe_offsets = probe.ProbeOffsetsHelper(config)
         self.probe_session = ProbeSessionHelper(config, self.mcu_probe)
