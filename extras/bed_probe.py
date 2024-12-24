@@ -18,9 +18,6 @@ class BedProbe:
         ppins.allow_multi_use_pin(pin.replace('^', '').replace('!', ''))
         buttons.register_buttons([pin], self._button_handler)
 
-        #Register with the endstop
-        # self.endstop = self.printer.load_object(config, "tool_probe_endstop")
-        # self.endstop.add_probe(config, self)
 
     def _button_handler(self, eventtime, is_triggered):
         self.endstop.note_probe_triggered(self, eventtime, is_triggered)
@@ -68,15 +65,18 @@ class ProbeSessionHelper:
         # Register event handlers
         self.printer.register_event_handler("gcode:command_error",
                                             self._handle_command_error)
+
     def _handle_command_error(self):
         if self.multi_probe_pending:
             try:
                 self.end_probe_session()
             except:
                 logging.exception("Multi-probe end")
+
     def _probe_state_error(self):
         raise self.printer.command_error(
             "Internal probe error - start/end probe session mismatch")
+
     def start_probe_session(self, gcmd):
         if self.multi_probe_pending:
             self._probe_state_error()
@@ -84,12 +84,14 @@ class ProbeSessionHelper:
         self.multi_probe_pending = True
         self.results = []
         return self
+
     def end_probe_session(self):
         if not self.multi_probe_pending:
             self._probe_state_error()
         self.results = []
         self.multi_probe_pending = False
         self.mcu_probe.multi_probe_end()
+
     def get_probe_params(self, gcmd=None):
         if gcmd is None:
             gcmd = self.dummy_gcode_cmd
@@ -110,6 +112,7 @@ class ProbeSessionHelper:
                 'samples_tolerance': samples_tolerance,
                 'samples_tolerance_retries': samples_retries,
                 'samples_result': samples_result}
+
     def _probe(self, speed):
         toolhead = self.printer.lookup_object('toolhead')
         curtime = self.printer.get_reactor().monotonic()
