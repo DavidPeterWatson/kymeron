@@ -8,5 +8,5 @@ class Retraction:
         self.printer.add_object('retraction', self)
 
 
-def load_config_prefix(config):
+def load_config(config):
     return Retraction(config)

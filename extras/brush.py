@@ -10,5 +10,5 @@ class Brush:
         self.printer.add_object('brush', self)
 
 
-def load_config_prefix(config):
+def load_config(config):
     return Brush(config)

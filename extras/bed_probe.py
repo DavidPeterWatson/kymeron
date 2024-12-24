@@ -18,9 +18,9 @@ class BedProbe:
         ppins.allow_multi_use_pin(pin.replace('^', '').replace('!', ''))
         buttons.register_buttons([pin], self._button_handler)
 
-        # #Register with the endstop
-        # self.endstop = self.printer.load_object(config, "bed_probe_endstop")
-        # self.endstop.add_probe(config, self)
+        #Register with the endstop
+        self.endstop = self.printer.load_object(config, "tool_probe_endstop")
+        self.endstop.add_probe(config, self)
 
     def _button_handler(self, eventtime, is_triggered):
         self.endstop.note_probe_triggered(self, eventtime, is_triggered)
@@ -165,5 +165,5 @@ class ProbeSessionHelper:
         self.results = []
         return res
 
-def load_config_prefix(config):
+def load_config(config):
     return BedProbe(config)

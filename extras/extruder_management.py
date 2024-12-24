@@ -5,5 +5,5 @@ class ExtruderManagement:
         self.printer.add_object('extruder_management', self)
 
 
-def load_config_prefix(config):
+def load_config(config):
     return ExtruderManagement(config)
