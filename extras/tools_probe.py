@@ -253,10 +253,10 @@ class PrinterProbeMultiAxis:
         return pos
 
     def _probe(self, speed, axis, sense, max_distance):
-        phoming = self.printer.lookup_object('homing')
+        homing = self.printer.lookup_object('homing')
         pos = self._get_target_position(axis, sense, max_distance)
         try:
-            epos = phoming.probing_move(self.mcu_probe[axis], pos, speed)
+            epos = homing.probing_move(self.mcu_probe[axis], pos, speed)
         except self.printer.command_error as e:
             reason = str(e)
             if "Timeout during endstop homing" in reason:
