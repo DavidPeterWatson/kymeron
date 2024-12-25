@@ -330,6 +330,8 @@ class ProbeSessionHelper:
             liftpos[axis] = pos[axis] - sense * rocking_retract_dist
             toolhead.manual_move(liftpos, rocking_lift_speed)
             rocks += 1
+        # Allow axis_twist_compensation to update results
+        self.printer.send_event("probe:update_results", epos)
         gcode = self.printer.lookup_object('gcode')
         gcode.respond_info(f"Probe made contact in {direction} direction at {pos[0]},{pos[1]},{pos[2]}")
         return pos
@@ -346,12 +348,6 @@ class ProbeSessionHelper:
             if "Timeout during endstop homing" in reason:
                 reason += HINT_TIMEOUT
             raise self.printer.command_error(reason)
-        # Allow axis_twist_compensation to update results
-        self.printer.send_event("probe:update_results", epos)
-        # Report results
-        gcode = self.printer.lookup_object('gcode')
-        gcode.respond_info("probe at %.3f,%.3f is z=%.6f"
-                           % (epos[0], epos[1], epos[2]))
         return epos[:3]
 
     def check_homed(self):
@@ -384,8 +380,14 @@ class ProbeSessionHelper:
         if not self.multi_probe_pending:
             self._probe_state_error()
         params = self.get_probe_params(gcmd)
+        if direction not in direction_types:
+            raise self.printer.command_error("Wrong value for DIRECTION.")
+        logging.info("run_probe direction = " + str(direction))
+        (axis, sense) = direction_types[direction]
+        logging.info("run_probe axis = %d, sense = %d" % (axis, sense))
+        self.gcode.respond_info(f"Probing {axis} axis with {sense} sense")
         toolhead = self.printer.lookup_object('toolhead')
-        probexy = toolhead.get_position()[:2]
+        start_position = self.printer.lookup_object('toolhead').get_position()
         retries = 0
         positions = []
         sample_count = params['samples']
@@ -394,8 +396,8 @@ class ProbeSessionHelper:
             pos = self._rocking_probe(params['probe_speed'], direction)
             positions.append(pos)
             # Check samples tolerance
-            z_positions = [p[2] for p in positions]
-            if max(z_positions)-min(z_positions) > params['samples_tolerance']:
+            axis_positions = [p[axis] for p in positions]
+            if max(axis_positions)-min(axis_positions) > params['samples_tolerance']:
                 if retries >= params['samples_tolerance_retries']:
                     raise gcmd.error("Probe samples exceed samples_tolerance")
                 gcmd.respond_info("Probe samples exceed tolerance. Retrying...")
@@ -403,9 +405,9 @@ class ProbeSessionHelper:
                 positions = []
             # Retract
             if len(positions) < sample_count:
-                toolhead.manual_move(
-                    probexy + [pos[2] + params['sample_retract_dist']],
-                    params['lift_speed'])
+                liftpos = start_position
+                liftpos[axis] = pos[axis] - sense * params['sample_retract_dist']
+                toolhead.manual_move(liftpos, params['lift_speed'])
         # Calculate result
         epos = calc_probe_z_average(positions, params['samples_result'])
         self.results.append(epos)
