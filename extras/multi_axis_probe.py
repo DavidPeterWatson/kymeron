@@ -732,7 +732,7 @@ class PrinterProbe:
             ProbeEndstopWrapper(config, 'y'),
             ProbeEndstopWrapper(config, 'z')
             ]
-        self.cmd_helper = ProbeCommandHelper(config, self, self.mcu_probes)
+        self.cmd_helper = ProbeCommandHelper(config, self.mcu_probes)
         self.probe_offsets = ProbeOffsetsHelper(config)
         self.probe_session = ProbeSessionHelper(config, self.mcu_probes)
         self.tool_probe = ToolProbe(config, self.probe_session)
