@@ -561,7 +561,7 @@ class ProbeEndstopWrapper:
         return self.position_endstop
 
 # Main external probe interface
-class PrinterProbe:
+class RockingProbe:
     def __init__(self, config):
         self.printer = config.get_printer()
         self.mcu_probe = ProbeEndstopWrapper(config)
@@ -569,6 +569,7 @@ class PrinterProbe:
                                              self.mcu_probe.query_endstop)
         self.probe_offsets = ProbeOffsetsHelper(config)
         self.probe_session = ProbeSessionHelper(config, self.mcu_probe)
+        self.printer.add_object('probe', self)
     def get_probe_params(self, gcmd=None):
         return self.probe_session.get_probe_params(gcmd)
     def get_offsets(self):
@@ -577,6 +578,7 @@ class PrinterProbe:
         return self.cmd_helper.get_status(eventtime)
     def start_probe_session(self, gcmd):
         return self.probe_session.start_probe_session(gcmd)
+    
 
 def load_config(config):
-    return PrinterProbe(config)
+    return RockingProbe(config)
