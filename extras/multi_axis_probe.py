@@ -554,8 +554,8 @@ class ProbeSessionHelper:
                 liftpos[axis] = pos[axis] - sense * sample_retract_dist
                 toolhead.manual_move(liftpos, lift_speed)
         # Calculate result
-        epos = self._calculate_results(positions, samples_result, axis)
-        self.results.append(epos)
+        result_position = self._calculate_results(positions, samples_result, axis)
+        self.results.append(result_position)
 
 
     def pull_probed_results(self):
@@ -576,7 +576,7 @@ class ToolProbe:
         self.lift_z = config.getfloat('lift_z', 1.0)
         self.trigger_to_bottom_z = config.getfloat('trigger_to_bottom_z',
                                                    default=0.0)
-        self.lift_speed = config.getfloat('lift_speed', self.probe_session.lift_speed)
+        self.lift_speed = config.getfloat('lift_speed', self.travel_speed * 0.5)
         self.final_lift_z = config.getfloat('final_lift_z', 4.0)
         self.sensor_location = None
         self.last_result = [0., 0., 0.]
