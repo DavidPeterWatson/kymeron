@@ -190,7 +190,7 @@ class ProbeCommandHelper:
 
 # Helper to track multiple probe attempts in a single command
 class ProbeSessionHelper:
-    def __init__(self, config, mcu_probes):
+    def __init__(self, config, mcu_probes: List[]):
         self.printer = config.get_printer()
         self.mcu_probes = mcu_probes
         gcode = self.printer.lookup_object('gcode')
