@@ -373,7 +373,7 @@ class ProbeSessionHelper:
                             kin_status['axis_minimum'][axis])
         return pos
 
-    def run_probe(self, gcmd):
+    def run_probe(self, gcmd, direction='z-'):
         if not self.multi_probe_pending:
             self._probe_state_error()
         params = self.get_probe_params(gcmd)
@@ -384,7 +384,7 @@ class ProbeSessionHelper:
         sample_count = params['samples']
         while len(positions) < sample_count:
             # Probe position
-            pos = self._probe(params['probe_speed'])
+            pos = self._rocking_probe(params['probe_speed'], direction)
             positions.append(pos)
             # Check samples tolerance
             z_positions = [p[2] for p in positions]
