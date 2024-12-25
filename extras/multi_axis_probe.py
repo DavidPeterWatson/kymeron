@@ -250,6 +250,8 @@ class ProbeSessionHelper:
         # Configurable probing speeds
         self.speed = config.getfloat('speed', 5.0, above=0.)
         self.lift_speed = config.getfloat('lift_speed', self.speed, above=0.)
+        # Rocking support (for improved accuracy)
+        self.spread = config.getfloat('spread', 5.0, above=0.)
         # Multi-sample support (for improved accuracy)
         self.sample_count = config.getint('samples', 1, minval=1)
         self.sample_retract_dist = config.getfloat('sample_retract_dist', 2.,
@@ -293,6 +295,7 @@ class ProbeSessionHelper:
         if gcmd is None:
             gcmd = self.dummy_gcode_cmd
         probe_speed = gcmd.get_float("PROBE_SPEED", self.speed, above=0.)
+        spread = gcmd.get_float("SPREAD", self.spread, above=0.)
         lift_speed = gcmd.get_float("LIFT_SPEED", self.lift_speed, above=0.)
         samples = gcmd.get_int("SAMPLES", self.sample_count, minval=1)
         sample_retract_dist = gcmd.get_float("SAMPLE_RETRACT_DIST",
@@ -304,6 +307,7 @@ class ProbeSessionHelper:
         samples_result = gcmd.get("SAMPLES_RESULT", self.samples_result)
         return {'probe_speed': probe_speed,
                 'lift_speed': lift_speed,
+                'spread': spread,
                 'samples': samples,
                 'sample_retract_dist': sample_retract_dist,
                 'samples_tolerance': samples_tolerance,
@@ -329,13 +333,13 @@ class ProbeSessionHelper:
         self.gcode.respond_info(f"Probe made contact in {direction} direction at {pos[0]},{pos[1]},{pos[2]}")
         return pos
 
-    def _probe(self, speed):
+    def _probe(self, speed, direction='z-'):
         toolhead = self.printer.lookup_object('toolhead')
         curtime = self.printer.get_reactor().monotonic()
         if 'z' not in toolhead.get_status(curtime)['homed_axes']:
             raise self.printer.command_error("Must home before probe")
-        pos = toolhead.get_position()
-        pos[2] = self.z_position
+        (axis, sense) = direction_types[direction]
+        pos = self._get_target_position(direction)
         try:
             epos = self.mcu_probe.probing_move(pos, speed)
         except self.printer.command_error as e:
@@ -350,6 +354,25 @@ class ProbeSessionHelper:
         gcode.respond_info("probe at %.3f,%.3f is z=%.6f"
                            % (epos[0], epos[1], epos[2]))
         return epos[:3]
+
+    def _get_target_position(self, direction):
+        toolhead = self.printer.lookup_object('toolhead')
+        curtime = self.printer.get_reactor().monotonic()
+        (axis, sense) = direction_types[direction]
+        max_distance = self.spread * 1.8
+        pos = toolhead.get_position()
+        kin_status = toolhead.get_kinematics().get_status(curtime)
+        if 'axis_minimum' not in kin_status or 'axis_minimum' not in kin_status:
+            raise self.gcode.error(
+                "Tools calibrate only works with cartesian kinematics")
+        if sense > 0:
+            pos[axis] = min(pos[axis] + max_distance,
+                            kin_status['axis_maximum'][axis])
+        else:
+            pos[axis] = max(pos[axis] - max_distance,
+                            kin_status['axis_minimum'][axis])
+        return pos
+
     def run_probe(self, gcmd):
         if not self.multi_probe_pending:
             self._probe_state_error()
