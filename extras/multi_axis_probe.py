@@ -396,5 +396,6 @@ class MultiAxisProbe:
     def start_probe_session(self, gcmd):
         return self.probe_session.start_probe_session(gcmd)
 
+
 def load_config(config):
     return MultiAxisProbe(config)
