@@ -7,8 +7,6 @@ import logging
 import pins
 from . import manual_probe
 
-direction_types = {'x+': [0, +1], 'x-': [0, -1], 'y+': [1, +1], 'y-': [1, -1],
-                   'z+': [2, +1], 'z-': [2, -1]}
 HINT_TIMEOUT = """
 If the probe did not move far enough to trigger, then
 consider reducing the Z axis minimum position so the probe
@@ -309,32 +307,13 @@ class ProbeSessionHelper:
                 'samples_tolerance': samples_tolerance,
                 'samples_tolerance_retries': samples_retries,
                 'samples_result': samples_result}
-
-    def _rocking_probe(self, speed, direction='z-'):
+    def _probe(self, speed):
         toolhead = self.printer.lookup_object('toolhead')
-        probe_start = toolhead.get_position()
-        (axis, sense) = direction_types[direction]
-        rocking_count = 3
-        rocks = 0
-        rocking_speed = speed
-        rocking_lift_speed = rocking_speed * 2.0
-        while rocks < rocking_count:
-            pos = self._probe(rocking_speed, direction)
-            rocking_speed = rocking_speed * 0.1
-            rocking_retract_dist = rocking_speed * 3.0
-            liftpos = probe_start
-            liftpos[axis] = pos[axis] - sense * rocking_retract_dist
-            self._move(liftpos, rocking_lift_speed)
-            rocks += 1
-        self.gcode.respond_info(f"Probe made contact on {axis} axis at {pos[0]},{pos[1]},{pos[2]}")
-        return pos
-
-    def _probe(self, speed, direction='z-'):
-        toolhead = self.printer.lookup_object('toolhead')
-        self.check_homed()
+        curtime = self.printer.get_reactor().monotonic()
+        if 'z' not in toolhead.get_status(curtime)['homed_axes']:
+            raise self.printer.command_error("Must home before probe")
         pos = toolhead.get_position()
-        (axis, sense) = direction_types[direction]
-        pos = self._get_target_position(direction)
+        pos[2] = self.z_position
         try:
             epos = self.mcu_probe.probing_move(pos, speed)
         except self.printer.command_error as e:
@@ -349,81 +328,35 @@ class ProbeSessionHelper:
         gcode.respond_info("probe at %.3f,%.3f is z=%.6f"
                            % (epos[0], epos[1], epos[2]))
         return epos[:3]
-
-    def check_homed(self):
-        toolhead = self.printer.lookup_object('toolhead')
-        curtime = self.printer.get_reactor().monotonic()
-        if 'x' not in toolhead.get_status(curtime)['homed_axes'] or \
-                'y' not in toolhead.get_status(curtime)['homed_axes'] or \
-                'z' not in toolhead.get_status(curtime)['homed_axes']:
-            raise self.printer.command_error("Must home before probe")
-        
-    def _get_target_position(self, direction):
-        toolhead = self.printer.lookup_object('toolhead')
-        curtime = self.printer.get_reactor().monotonic()
-        (axis, sense) = direction_types[direction]
-        max_distance = self.spread * 1.8
-        pos = toolhead.get_position()
-        kin_status = toolhead.get_kinematics().get_status(curtime)
-        if 'axis_minimum' not in kin_status or 'axis_minimum' not in kin_status:
-            raise self.gcode.error(
-                "Tools calibrate only works with cartesian kinematics")
-        if sense > 0:
-            pos[axis] = min(pos[axis] + max_distance,
-                            kin_status['axis_maximum'][axis])
-        else:
-            pos[axis] = max(pos[axis] - max_distance,
-                            kin_status['axis_minimum'][axis])
-        return pos
-
-    def run_probe(self, gcmd, direction='z-'):
+    def run_probe(self, gcmd):
         if not self.multi_probe_pending:
             self._probe_state_error()
         params = self.get_probe_params(gcmd)
-        if direction not in direction_types:
-            raise self.printer.command_error("Wrong value for DIRECTION.")
-        logging.info("run_probe direction = " + str(direction))
-
-        (axis, sense) = direction_types[direction]
-        logging.info("run_probe axis = %d, sense = %d" % (axis, sense))
-
-        self.gcode.respond_info(f"Probing {axis} axis with {sense} sense")
-
         toolhead = self.printer.lookup_object('toolhead')
-        start_position = self.printer.lookup_object('toolhead').get_position()
+        probexy = toolhead.get_position()[:2]
         retries = 0
         positions = []
-        speed = params['speed']
-        lift_speed = params['lift_speed']
         sample_count = params['samples']
-        sample_retract_dist = params['sample_retract_dist']
-        samples_tolerance = params['samples_tolerance']
-        samples_tolerance_retries = params['samples_tolerance_retries']
-        samples_result = params['samples_result']
-
-        retries = 0
-        positions = []
         while len(positions) < sample_count:
             # Probe position
-            pos = self._rocking_probe(speed, direction)
+            pos = self._probe(params['probe_speed'])
             positions.append(pos)
             # Check samples tolerance
-            axis_positions = [p[axis] for p in positions]
-            if max(axis_positions)-min(axis_positions) > samples_tolerance:
-                if retries >= samples_tolerance_retries:
+            z_positions = [p[2] for p in positions]
+            if max(z_positions)-min(z_positions) > params['samples_tolerance']:
+                if retries >= params['samples_tolerance_retries']:
                     raise gcmd.error("Probe samples exceed samples_tolerance")
                 gcmd.respond_info("Probe samples exceed tolerance. Retrying...")
                 retries += 1
                 positions = []
             # Retract
             if len(positions) < sample_count:
-                liftpos = start_position
-                liftpos[axis] = pos[axis] - sense * sample_retract_dist
-                toolhead.manual_move(liftpos, lift_speed)
+                toolhead.manual_move(
+                    probexy + [pos[2] + params['sample_retract_dist']],
+                    params['lift_speed'])
         # Calculate result
-        result_position = self._calculate_results(positions, samples_result, axis)
-        self.results.append(result_position)
-
+        epos = calc_probe_z_average(positions, params['samples_result'])
+        self.results.append(epos)
     def pull_probed_results(self):
         res = self.results
         self.results = []
@@ -434,7 +367,7 @@ class ProbeOffsetsHelper:
     def __init__(self, config):
         self.x_offset = config.getfloat('x_offset', 0.)
         self.y_offset = config.getfloat('y_offset', 0.)
-        self.z_offset = config.getfloat('z_offset', 0.)
+        self.z_offset = config.getfloat('z_offset')
     def get_offsets(self):
         return self.x_offset, self.y_offset, self.z_offset
 
@@ -568,7 +501,7 @@ def run_single_probe(probe, gcmd):
 class ProbeEndstopWrapper:
     def __init__(self, config):
         self.printer = config.get_printer()
-        self.position_endstop = 0.
+        self.position_endstop = config.getfloat('z_offset')
         self.stow_on_each_sample = config.getboolean(
             'deactivate_on_each_sample', True)
         gcode_macro = self.printer.load_object(config, 'gcode_macro')
