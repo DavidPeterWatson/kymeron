@@ -33,13 +33,181 @@ def calc_probe_z_average(positions, method='average'):
     return calc_probe_z_average(z_sorted[middle-1:middle+1], 'average')
 
 
+# Helper to read the xyz probe offsets from the config
+class ProbeOffsetsHelper:
+    def __init__(self, config):
+        self.x_offset = config.getfloat('x_offset', 0.)
+        self.y_offset = config.getfloat('y_offset', 0.)
+        self.z_offset = config.getfloat('z_offset', 0.)
+    def get_offsets(self):
+        return self.x_offset, self.y_offset, self.z_offset
+
+
+######################################################################
+# Tools for utilizing the probe
+######################################################################
+
+# Helper code that can probe a series of points and report the
+# position at each point.
+class ProbePointsHelper:
+    def __init__(self, config, finalize_callback, default_points=None):
+        self.printer = config.get_printer()
+        self.finalize_callback = finalize_callback
+        self.probe_points = default_points
+        self.name = config.get_name()
+        self.gcode = self.printer.lookup_object('gcode')
+        # Read config settings
+        if default_points is None or config.get('points', None) is not None:
+            self.probe_points = config.getlists('points', seps=(',', '\n'),
+                                                parser=float, count=2)
+        def_move_z = config.getfloat('horizontal_move_z', 5.)
+        self.default_horizontal_move_z = def_move_z
+        self.probe_speed = config.getfloat('probe_speed', 50., above=0.)
+        self.use_offsets = False
+        # Internal probing state
+        self.lift_speed = self.probe_speed
+        self.probe_offsets = (0., 0., 0.)
+        self.manual_results = []
+    def minimum_points(self,n):
+        if len(self.probe_points) < n:
+            raise self.printer.config_error(
+                "Need at least %d probe points for %s" % (n, self.name))
+    def update_probe_points(self, points, min_points):
+        self.probe_points = points
+        self.minimum_points(min_points)
+    def use_xy_offsets(self, use_offsets):
+        self.use_offsets = use_offsets
+    def get_lift_speed(self):
+        return self.lift_speed
+    def _move(self, coord, probe_speed):
+        self.printer.lookup_object('toolhead').manual_move(coord, probe_speed)
+    def _raise_tool(self, is_first=False, direction='z-'):
+        probe_speed = self.lift_speed
+        if is_first:
+            # Use full probe_speed to first probe position
+            probe_speed = self.probe_speed
+        self._move([None, None, self.horizontal_move_z], probe_speed)
+    def _invoke_callback(self, results):
+        # Flush lookahead queue
+        toolhead = self.printer.lookup_object('toolhead')
+        toolhead.get_last_move_time()
+        # Invoke callback
+        res = self.finalize_callback(self.probe_offsets, results)
+        return res != "retry"
+    def _move_next(self, probe_num):
+        # Move to next XY probe point
+        nextpos = list(self.probe_points[probe_num])
+        if self.use_offsets:
+            nextpos[0] -= self.probe_offsets[0]
+            nextpos[1] -= self.probe_offsets[1]
+        self._move(nextpos, self.probe_speed)
+    def start_probe(self, gcmd, direction='z-'):
+        manual_probe.verify_no_manual_probe(self.printer)
+        # Lookup objects
+        probe = self.printer.lookup_object('probe', None)
+        method = gcmd.get('METHOD', 'automatic').lower()
+        def_move_z = self.default_horizontal_move_z
+        self.horizontal_move_z = gcmd.get_float('HORIZONTAL_MOVE_Z',
+                                                def_move_z)
+        if probe is None or method == 'manual':
+            # Manual probe
+            self.lift_speed = self.probe_speed
+            self.probe_offsets = (0., 0., 0.)
+            self.manual_results = []
+            self._manual_probe_start()
+            return
+        # Perform automatic probing
+        self.lift_speed = probe.get_probe_params(gcmd)['lift_speed']
+        self.probe_offsets = probe.get_offsets()
+        if self.horizontal_move_z < self.probe_offsets[2]:
+            raise gcmd.error("horizontal_move_z can't be less than"
+                             " probe's z_offset")
+        probe_session = probe.start_probe_session(gcmd)
+        probe_num = 0
+        while 1:
+            self._raise_tool(not probe_num)
+            if probe_num >= len(self.probe_points):
+                results = probe_session.pull_probed_results()
+                done = self._invoke_callback(results)
+                if done:
+                    break
+                # Caller wants a "retry" - restart probing
+                probe_num = 0
+            self._move_next(probe_num)
+            probe_session.run_probe(gcmd, direction)
+            probe_num += 1
+        probe_session.end_probe_session()
+    def _manual_probe_start(self):
+        self._raise_tool(not self.manual_results)
+        if len(self.manual_results) >= len(self.probe_points):
+            done = self._invoke_callback(self.manual_results)
+            if done:
+                return
+            # Caller wants a "retry" - clear results and restart probing
+            self.manual_results = []
+        self._move_next(len(self.manual_results))
+        gcmd = self.gcode.create_gcode_command("", "", {})
+        manual_probe.ManualProbeHelper(self.printer, gcmd,
+                                       self._manual_probe_finalize)
+    def _manual_probe_finalize(self, kin_pos):
+        if kin_pos is None:
+            return
+        self.manual_results.append(kin_pos)
+        self._manual_probe_start()
+
+# Helper to obtain a single probe measurement
+def run_single_probe(probe, gcmd, direction='z-'):
+    probe_session = probe.start_probe_session(gcmd)
+    probe_session.run_probe(gcmd)
+    pos = probe_session.pull_probed_results()[0]
+    probe_session.end_probe_session()
+    return pos
+
+class ProbeEndstopWrapper:
+    def __init__(self, config, axis):
+        self.printer = config.get_printer()
+        self.axis = axis
+        # Create an "endstop" object to handle the probe pin
+        pins = self.printer.lookup_object('pins')
+        pin = config.get('pin')
+        pins.allow_multi_use_pin(pin.replace('^', '').replace('!', ''))
+        pin_params = pins.lookup_pin(pin, can_invert=True, can_pullup=True)
+        mcu = pin_params['chip']
+        self.mcu_endstop = mcu.setup_pin('endstop', pin_params)
+        self.printer.register_event_handler('klippy:mcu_identify', self._handle_mcu_identify)
+        # Wrappers
+        self.get_mcu = self.mcu_endstop.get_mcu
+        self.add_stepper = self.mcu_endstop.add_stepper
+        self.get_steppers = self._get_steppers
+        self.home_start = self.mcu_endstop.home_start
+        self.home_wait = self.mcu_endstop.home_wait
+        self.query_endstop = self.mcu_endstop.query_endstop
+
+    def _get_steppers(self):
+        return self.mcu_endstop.get_steppers()
+
+    def _handle_mcu_identify(self):
+        kin = self.printer.lookup_object('toolhead').get_kinematics()
+        for stepper in kin.get_steppers():
+            if stepper.is_active_axis(self.axis):
+                self.add_stepper(stepper)
+
+    def get_position_endstop(self):
+        return 0.
+
+    def probing_move(self, pos, probe_speed):
+        homing = self.printer.lookup_object('homing')
+        return homing.probing_move(self, pos, probe_speed)
+
+
+
 ######################################################################
 # Probe device implementation helpers
 ######################################################################
 
 # Helper to implement common probing commands
 class ProbeCommandHelper:
-    def __init__(self, config, mcu_probes):
+    def __init__(self, config, mcu_probes: List[ProbeEndstopWrapper]):
         self.printer = config.get_printer()
         self.mcu_probes = mcu_probes
         self.name = config.get_name()
@@ -189,9 +357,10 @@ class ProbeCommandHelper:
         configfile = self.printer.lookup_object('configfile')
         configfile.set(self.name, 'z_offset', "%.3f" % (new_calibrate,))
 
+
 # Helper to track multiple probe attempts in a single command
 class ProbeSessionHelper:
-    def __init__(self, config, mcu_probes):
+    def __init__(self, config, mcu_probes: List[ProbeEndstopWrapper]):
         self.printer = config.get_printer()
         self.mcu_probes = mcu_probes
         gcode = self.printer.lookup_object('gcode')
@@ -393,173 +562,6 @@ class ProbeSessionHelper:
         res = self.results
         self.results = []
         return res
-
-# Helper to read the xyz probe offsets from the config
-class ProbeOffsetsHelper:
-    def __init__(self, config):
-        self.x_offset = config.getfloat('x_offset', 0.)
-        self.y_offset = config.getfloat('y_offset', 0.)
-        self.z_offset = config.getfloat('z_offset', 0.)
-    def get_offsets(self):
-        return self.x_offset, self.y_offset, self.z_offset
-
-
-######################################################################
-# Tools for utilizing the probe
-######################################################################
-
-# Helper code that can probe a series of points and report the
-# position at each point.
-class ProbePointsHelper:
-    def __init__(self, config, finalize_callback, default_points=None):
-        self.printer = config.get_printer()
-        self.finalize_callback = finalize_callback
-        self.probe_points = default_points
-        self.name = config.get_name()
-        self.gcode = self.printer.lookup_object('gcode')
-        # Read config settings
-        if default_points is None or config.get('points', None) is not None:
-            self.probe_points = config.getlists('points', seps=(',', '\n'),
-                                                parser=float, count=2)
-        def_move_z = config.getfloat('horizontal_move_z', 5.)
-        self.default_horizontal_move_z = def_move_z
-        self.probe_speed = config.getfloat('probe_speed', 50., above=0.)
-        self.use_offsets = False
-        # Internal probing state
-        self.lift_speed = self.probe_speed
-        self.probe_offsets = (0., 0., 0.)
-        self.manual_results = []
-    def minimum_points(self,n):
-        if len(self.probe_points) < n:
-            raise self.printer.config_error(
-                "Need at least %d probe points for %s" % (n, self.name))
-    def update_probe_points(self, points, min_points):
-        self.probe_points = points
-        self.minimum_points(min_points)
-    def use_xy_offsets(self, use_offsets):
-        self.use_offsets = use_offsets
-    def get_lift_speed(self):
-        return self.lift_speed
-    def _move(self, coord, probe_speed):
-        self.printer.lookup_object('toolhead').manual_move(coord, probe_speed)
-    def _raise_tool(self, is_first=False, direction='z-'):
-        probe_speed = self.lift_speed
-        if is_first:
-            # Use full probe_speed to first probe position
-            probe_speed = self.probe_speed
-        self._move([None, None, self.horizontal_move_z], probe_speed)
-    def _invoke_callback(self, results):
-        # Flush lookahead queue
-        toolhead = self.printer.lookup_object('toolhead')
-        toolhead.get_last_move_time()
-        # Invoke callback
-        res = self.finalize_callback(self.probe_offsets, results)
-        return res != "retry"
-    def _move_next(self, probe_num):
-        # Move to next XY probe point
-        nextpos = list(self.probe_points[probe_num])
-        if self.use_offsets:
-            nextpos[0] -= self.probe_offsets[0]
-            nextpos[1] -= self.probe_offsets[1]
-        self._move(nextpos, self.probe_speed)
-    def start_probe(self, gcmd, direction='z-'):
-        manual_probe.verify_no_manual_probe(self.printer)
-        # Lookup objects
-        probe = self.printer.lookup_object('probe', None)
-        method = gcmd.get('METHOD', 'automatic').lower()
-        def_move_z = self.default_horizontal_move_z
-        self.horizontal_move_z = gcmd.get_float('HORIZONTAL_MOVE_Z',
-                                                def_move_z)
-        if probe is None or method == 'manual':
-            # Manual probe
-            self.lift_speed = self.probe_speed
-            self.probe_offsets = (0., 0., 0.)
-            self.manual_results = []
-            self._manual_probe_start()
-            return
-        # Perform automatic probing
-        self.lift_speed = probe.get_probe_params(gcmd)['lift_speed']
-        self.probe_offsets = probe.get_offsets()
-        if self.horizontal_move_z < self.probe_offsets[2]:
-            raise gcmd.error("horizontal_move_z can't be less than"
-                             " probe's z_offset")
-        probe_session = probe.start_probe_session(gcmd)
-        probe_num = 0
-        while 1:
-            self._raise_tool(not probe_num)
-            if probe_num >= len(self.probe_points):
-                results = probe_session.pull_probed_results()
-                done = self._invoke_callback(results)
-                if done:
-                    break
-                # Caller wants a "retry" - restart probing
-                probe_num = 0
-            self._move_next(probe_num)
-            probe_session.run_probe(gcmd, direction)
-            probe_num += 1
-        probe_session.end_probe_session()
-    def _manual_probe_start(self):
-        self._raise_tool(not self.manual_results)
-        if len(self.manual_results) >= len(self.probe_points):
-            done = self._invoke_callback(self.manual_results)
-            if done:
-                return
-            # Caller wants a "retry" - clear results and restart probing
-            self.manual_results = []
-        self._move_next(len(self.manual_results))
-        gcmd = self.gcode.create_gcode_command("", "", {})
-        manual_probe.ManualProbeHelper(self.printer, gcmd,
-                                       self._manual_probe_finalize)
-    def _manual_probe_finalize(self, kin_pos):
-        if kin_pos is None:
-            return
-        self.manual_results.append(kin_pos)
-        self._manual_probe_start()
-
-# Helper to obtain a single probe measurement
-def run_single_probe(probe, gcmd, direction='z-'):
-    probe_session = probe.start_probe_session(gcmd)
-    probe_session.run_probe(gcmd)
-    pos = probe_session.pull_probed_results()[0]
-    probe_session.end_probe_session()
-    return pos
-
-class ProbeEndstopWrapper:
-    def __init__(self, config, axis):
-        self.printer = config.get_printer()
-        self.axis = axis
-        # Create an "endstop" object to handle the probe pin
-        pins = self.printer.lookup_object('pins')
-        pin = config.get('pin')
-        pins.allow_multi_use_pin(pin.replace('^', '').replace('!', ''))
-        pin_params = pins.lookup_pin(pin, can_invert=True, can_pullup=True)
-        mcu = pin_params['chip']
-        self.mcu_endstop = mcu.setup_pin('endstop', pin_params)
-        self.printer.register_event_handler('klippy:mcu_identify', self._handle_mcu_identify)
-        # Wrappers
-        self.get_mcu = self.mcu_endstop.get_mcu
-        self.add_stepper = self.mcu_endstop.add_stepper
-        self.get_steppers = self._get_steppers
-        self.home_start = self.mcu_endstop.home_start
-        self.home_wait = self.mcu_endstop.home_wait
-        self.query_endstop = self.mcu_endstop.query_endstop
-
-    def _get_steppers(self):
-        return self.mcu_endstop.get_steppers()
-
-    def _handle_mcu_identify(self):
-        kin = self.printer.lookup_object('toolhead').get_kinematics()
-        for stepper in kin.get_steppers():
-            if stepper.is_active_axis(self.axis):
-                self.add_stepper(stepper)
-
-    def get_position_endstop(self):
-        return 0.
-
-    def probing_move(self, pos, probe_speed):
-        homing = self.printer.lookup_object('homing')
-        return homing.probing_move(self, pos, probe_speed)
-
 
 class ToolProbe:
     def __init__(self, config, probe_session: ProbeSessionHelper):
