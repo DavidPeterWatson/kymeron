@@ -336,9 +336,7 @@ class ProbeSessionHelper:
 
     def _probe(self, speed, direction='z-'):
         toolhead = self.printer.lookup_object('toolhead')
-        curtime = self.printer.get_reactor().monotonic()
-        if 'z' not in toolhead.get_status(curtime)['homed_axes']:
-            raise self.printer.command_error("Must home before probe")
+        self.check_homed()
         (axis, sense) = direction_types[direction]
         pos = self._get_target_position(direction)
         try:
@@ -356,6 +354,14 @@ class ProbeSessionHelper:
                            % (epos[0], epos[1], epos[2]))
         return epos[:3]
 
+    def check_homed(self):
+        toolhead = self.printer.lookup_object('toolhead')
+        curtime = self.printer.get_reactor().monotonic()
+        if 'x' not in toolhead.get_status(curtime)['homed_axes'] or \
+                'y' not in toolhead.get_status(curtime)['homed_axes'] or \
+                'z' not in toolhead.get_status(curtime)['homed_axes']:
+            raise self.printer.command_error("Must home before probe")
+        
     def _get_target_position(self, direction):
         toolhead = self.printer.lookup_object('toolhead')
         curtime = self.printer.get_reactor().monotonic()
@@ -609,8 +615,7 @@ class RockingProbe:
     def __init__(self, config):
         self.printer = config.get_printer()
         self.mcu_probe = ProbeEndstopWrapper(config)
-        self.cmd_helper = ProbeCommandHelper(config, self,
-                                             self.mcu_probe.query_endstop)
+        self.cmd_helper = ProbeCommandHelper(config, self, self.mcu_probe.query_endstop)
         self.probe_offsets = ProbeOffsetsHelper(config)
         self.probe_session = ProbeSessionHelper(config, self.mcu_probe)
         self.printer.add_object('probe', self)
