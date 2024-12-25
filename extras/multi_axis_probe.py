@@ -330,7 +330,8 @@ class ProbeSessionHelper:
             liftpos[axis] = pos[axis] - sense * rocking_retract_dist
             toolhead.manual_move(liftpos, rocking_lift_speed)
             rocks += 1
-        self.gcode.respond_info(f"Probe made contact in {direction} direction at {pos[0]},{pos[1]},{pos[2]}")
+        gcode = self.printer.lookup_object('gcode')
+        gcode.respond_info(f"Probe made contact in {direction} direction at {pos[0]},{pos[1]},{pos[2]}")
         return pos
 
     def _probe(self, speed, direction='z-'):
