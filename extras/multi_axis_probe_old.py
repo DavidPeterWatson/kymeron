@@ -62,10 +62,10 @@ class ProbePointsHelper:
                                                 parser=float, count=2)
         def_move_z = config.getfloat('horizontal_move_z', 5.)
         self.default_horizontal_move_z = def_move_z
-        self.probe_speed = config.getfloat('probe_speed', 50., above=0.)
+        self.speed = config.getfloat('speed', 50., above=0.)
         self.use_offsets = False
         # Internal probing state
-        self.lift_speed = self.probe_speed
+        self.lift_speed = self.speed
         self.probe_offsets = (0., 0., 0.)
         self.manual_results = []
     def minimum_points(self,n):
@@ -79,14 +79,14 @@ class ProbePointsHelper:
         self.use_offsets = use_offsets
     def get_lift_speed(self):
         return self.lift_speed
-    def _move(self, coord, probe_speed):
-        self.printer.lookup_object('toolhead').manual_move(coord, probe_speed)
+    def _move(self, coord, speed):
+        self.printer.lookup_object('toolhead').manual_move(coord, speed)
     def _raise_tool(self, is_first=False, direction='z-'):
-        probe_speed = self.lift_speed
+        speed = self.lift_speed
         if is_first:
-            # Use full probe_speed to first probe position
-            probe_speed = self.probe_speed
-        self._move([None, None, self.horizontal_move_z], probe_speed)
+            # Use full speed to first probe position
+            speed = self.speed
+        self._move([None, None, self.horizontal_move_z], speed)
     def _invoke_callback(self, results):
         # Flush lookahead queue
         toolhead = self.printer.lookup_object('toolhead')
@@ -100,7 +100,7 @@ class ProbePointsHelper:
         if self.use_offsets:
             nextpos[0] -= self.probe_offsets[0]
             nextpos[1] -= self.probe_offsets[1]
-        self._move(nextpos, self.probe_speed)
+        self._move(nextpos, self.speed)
     def start_probe(self, gcmd, direction='z-'):
         manual_probe.verify_no_manual_probe(self.printer)
         # Lookup objects
@@ -111,7 +111,7 @@ class ProbePointsHelper:
                                                 def_move_z)
         if probe is None or method == 'manual':
             # Manual probe
-            self.lift_speed = self.probe_speed
+            self.lift_speed = self.speed
             self.probe_offsets = (0., 0., 0.)
             self.manual_results = []
             self._manual_probe_start()
@@ -195,9 +195,9 @@ class ProbeEndstopWrapper:
     def get_position_endstop(self):
         return 0.
 
-    def probing_move(self, pos, probe_speed):
+    def probing_move(self, pos, speed):
         homing = self.printer.lookup_object('homing')
-        return homing.probing_move(self, pos, probe_speed)
+        return homing.probing_move(self, pos, speed)
 
 
 
@@ -231,8 +231,8 @@ class ProbeCommandHelper:
                                self.cmd_Z_OFFSET_APPLY_PROBE,
                                desc=self.cmd_Z_OFFSET_APPLY_PROBE_help)
         
-    def _move(self, coord, probe_speed):
-        self.printer.lookup_object('toolhead').manual_move(coord, probe_speed)
+    def _move(self, coord, speed):
+        self.printer.lookup_object('toolhead').manual_move(coord, speed)
 
     def get_status(self, eventtime):
         return {'name': self.name,
@@ -284,7 +284,7 @@ class ProbeCommandHelper:
         x_offset, y_offset, z_offset = probe.get_offsets()
         curpos[0] += x_offset
         curpos[1] += y_offset
-        self._move(curpos, params['probe_speed'])
+        self._move(curpos, params['speed'])
         # Start manual probe
         manual_probe.ManualProbeHelper(self.printer, gcmd,
                                        self.probe_calibrate_finalize)
@@ -299,10 +299,10 @@ class ProbeCommandHelper:
         pos = toolhead.get_position()
         gcmd.respond_info("PROBE_ACCURACY at X:%.3f Y:%.3f Z:%.3f"
                           " (samples=%d retract=%.3f"
-                          " probe_speed=%.1f lift_speed=%.1f)\n"
+                          " speed=%.1f lift_speed=%.1f)\n"
                           % (pos[0], pos[1], pos[2],
                              sample_count, params['sample_retract_dist'],
-                             params['probe_speed'], params['lift_speed']))
+                             params['speed'], params['lift_speed']))
         # Create dummy gcmd with SAMPLES=1
         fo_params = dict(gcmd.get_command_parameters())
         fo_params['SAMPLES'] = '1'
@@ -375,7 +375,7 @@ class ProbeSessionHelper:
             self.z_position = pconfig.getfloat('minimum_z_position', 0.,
                                                note_valid=False)
         # Configurable probing speeds
-        self.probe_speed = config.getfloat('probe_speed', 5.0, above=0.)
+        self.speed = config.getfloat('speed', 5.0, above=0.)
         self.travel_speed = config.getfloat('travel_speed', 10.0, above=0.)
 
         # Multi-sample support (for improved accuracy)
@@ -417,14 +417,14 @@ class ProbeSessionHelper:
     def get_probe_params(self, gcmd=None):
         if gcmd is None:
             gcmd = self.dummy_gcode_cmd
-        probe_speed = gcmd.get_float("PROBE_SPEED", self.probe_speed, above=0.)
+        speed = gcmd.get_float("SPEED", self.speed, above=0.)
         lift_speed = gcmd.get_float("LIFT_SPEED", self.lift_speed, above=0.)
         samples = gcmd.get_int("SAMPLES", self.sample_count, minval=1)
         sample_retract_dist = gcmd.get_float("SAMPLE_RETRACT_DIST", self.sample_retract_dist, above=0.)
         samples_tolerance = gcmd.get_float("SAMPLES_TOLERANCE", self.samples_tolerance, minval=0.)
         samples_retries = gcmd.get_int("SAMPLES_TOLERANCE_RETRIES", self.samples_retries, minval=0)
         samples_result = gcmd.get("SAMPLES_RESULT", self.samples_result)
-        return {'probe_speed': probe_speed,
+        return {'speed': speed,
                 'lift_speed': lift_speed,
                 'samples': samples,
                 'sample_retract_dist': sample_retract_dist,
@@ -432,13 +432,13 @@ class ProbeSessionHelper:
                 'samples_tolerance_retries': samples_retries,
                 'samples_result': samples_result}
 
-    def _rocking_probe(self, probe_speed, direction='z-'):
+    def _rocking_probe(self, speed, direction='z-'):
         toolhead = self.printer.lookup_object('toolhead')
         probe_start = toolhead.get_position()
         (axis, sense) = direction_types[direction]
         rocking_count = 3
         rocks = 0
-        rocking_speed = probe_speed
+        rocking_speed = speed
         rocking_lift_speed = rocking_speed * 2.0
         while rocks < rocking_count:
             pos = self._probe(rocking_speed, direction)
@@ -451,12 +451,12 @@ class ProbeSessionHelper:
         self.gcode.respond_info(f"Probe made contact on {axis} axis at {pos[0]},{pos[1]},{pos[2]}")
         return pos
 
-    def _probe(self, probe_speed, direction='z-'):
+    def _probe(self, speed, direction='z-'):
         self.check_homed()
         (axis, sense) = direction_types[direction]
         pos = self._get_target_position(direction)
         try:
-            epos = self.mcu_probes[axis].probing_move(pos, probe_speed)
+            epos = self.mcu_probes[axis].probing_move(pos, speed)
         except self.printer.command_error as e:
             reason = str(e)
             if "Timeout during endstop homing" in reason:
@@ -526,7 +526,7 @@ class ProbeSessionHelper:
         start_position = self.printer.lookup_object('toolhead').get_position()
         retries = 0
         positions = []
-        probe_speed = params['probe_speed']
+        speed = params['speed']
         lift_speed = params['lift_speed']
         sample_count = params['samples']
         sample_retract_dist = params['sample_retract_dist']
@@ -538,7 +538,7 @@ class ProbeSessionHelper:
         positions = []
         while len(positions) < sample_count:
             # Probe position
-            pos = self._rocking_probe(probe_speed, direction)
+            pos = self._rocking_probe(speed, direction)
             positions.append(pos)
             # Check samples tolerance
             axis_positions = [p[axis] for p in positions]
