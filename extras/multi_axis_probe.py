@@ -7,6 +7,9 @@ import logging
 import pins
 from . import manual_probe
 
+direction_types = {'x+': [0, +1], 'x-': [0, -1], 'y+': [1, +1], 'y-': [1, -1],
+                   'z+': [2, +1], 'z-': [2, -1]}
+
 HINT_TIMEOUT = """
 If the probe did not move far enough to trigger, then
 consider reducing the Z axis minimum position so the probe
@@ -444,9 +447,9 @@ def run_single_probe(probe, gcmd):
 
 # Endstop wrapper that enables probe specific features
 class ProbeEndstopWrapper:
-    def __init__(self, config):
+    def __init__(self, config, axis=2):
         self.printer = config.get_printer()
-        self.position_endstop = config.getfloat('z_offset')
+        self.axis = axis
         self.stow_on_each_sample = config.getboolean(
             'deactivate_on_each_sample', True)
         gcode_macro = self.printer.load_object(config, 'gcode_macro')
@@ -501,13 +504,14 @@ class ProbeEndstopWrapper:
         if self.multi == 'OFF':
             self._raise_probe()
     def get_position_endstop(self):
-        return self.position_endstop
+        return 0.0
 
 # Main external probe interface
 class PrinterProbe:
     def __init__(self, config):
         self.printer = config.get_printer()
-        self.mcu_probe = ProbeEndstopWrapper(config)
+
+        self.mcu_probe = ProbeEndstopWrapper(config, 2)
         self.cmd_helper = ProbeCommandHelper(config, self,
                                              self.mcu_probe.query_endstop)
         self.probe_offsets = ProbeOffsetsHelper(config)

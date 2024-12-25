@@ -7,6 +7,7 @@ import logging
 from typing import List
 import pins
 from . import manual_probe
+
 direction_types = {'x+': [0, +1], 'x-': [0, -1], 'y+': [1, +1], 'y-': [1, -1],
                    'z+': [2, +1], 'z-': [2, -1]}
 
@@ -731,9 +732,9 @@ class PrinterProbe:
     def __init__(self, config):
         self.printer = config.get_printer()
         self.mcu_probes = [
-            ProbeEndstopWrapper(config, 'x'),
-            ProbeEndstopWrapper(config, 'y'),
-            ProbeEndstopWrapper(config, 'z')
+            ProbeEndstopWrapper(config, 0),
+            ProbeEndstopWrapper(config, 1),
+            ProbeEndstopWrapper(config, 2)
             ]
         self.cmd_helper = ProbeCommandHelper(config, self.mcu_probes)
         self.probe_offsets = ProbeOffsetsHelper(config)
