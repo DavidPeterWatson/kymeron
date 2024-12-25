@@ -309,6 +309,26 @@ class ProbeSessionHelper:
                 'samples_tolerance': samples_tolerance,
                 'samples_tolerance_retries': samples_retries,
                 'samples_result': samples_result}
+
+    def _rocking_probe(self, speed, direction='z-'):
+        toolhead = self.printer.lookup_object('toolhead')
+        probe_start = toolhead.get_position()
+        (axis, sense) = direction_types[direction]
+        rocking_count = 3
+        rocks = 0
+        rocking_speed = speed
+        rocking_lift_speed = rocking_speed * 2.0
+        while rocks < rocking_count:
+            pos = self._probe(rocking_speed, direction)
+            rocking_speed = rocking_speed * 0.1
+            rocking_retract_dist = rocking_speed * 3.0
+            liftpos = probe_start
+            liftpos[axis] = pos[axis] - sense * rocking_retract_dist
+            self._move(liftpos, rocking_lift_speed)
+            rocks += 1
+        self.gcode.respond_info(f"Probe made contact in {direction} direction at {pos[0]},{pos[1]},{pos[2]}")
+        return pos
+
     def _probe(self, speed):
         toolhead = self.printer.lookup_object('toolhead')
         curtime = self.printer.get_reactor().monotonic()
