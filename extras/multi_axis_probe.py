@@ -4,6 +4,7 @@
 #
 # This file may be distributed under the terms of the GNU GPLv3 license.
 import logging
+from typing import List
 import pins
 from . import manual_probe
 direction_types = {'x+': [0, +1], 'x-': [0, -1], 'y+': [1, +1], 'y-': [1, -1],
@@ -190,7 +191,7 @@ class ProbeCommandHelper:
 
 # Helper to track multiple probe attempts in a single command
 class ProbeSessionHelper:
-    def __init__(self, config, mcu_probes: List[]):
+    def __init__(self, config, mcu_probes):
         self.printer = config.get_printer()
         self.mcu_probes = mcu_probes
         gcode = self.printer.lookup_object('gcode')
