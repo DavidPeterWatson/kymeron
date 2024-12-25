@@ -385,7 +385,7 @@ class MultiAxisProbe:
         self.mcu_probe = self.tool_probe.multi_axis_probe_session.mcu_probe[2]
         self.probe_offsets = probe.ProbeOffsetsHelper(config)
         self.probe_session = self.tool_probe.multi_axis_probe_session
-        self.printer.add_object('probe', self)
+        # self.printer.add_object('probe', self)
 
     def get_probe_params(self, gcmd=None):
         return self.probe_session.get_probe_params(gcmd)
