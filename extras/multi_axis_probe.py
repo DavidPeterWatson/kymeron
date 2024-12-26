@@ -79,8 +79,9 @@ class ProbeCommandHelper:
         gcmd.respond_info("probe: %s" % (["open", "TRIGGERED"][not not res],))
     cmd_PROBE_help = "Probe Z-height at current XY position"
     def cmd_PROBE(self, gcmd):
-        pos = run_single_probe(self.probe, gcmd)
-        gcmd.respond_info("Result is z=%.6f" % (pos[2],))
+        direction = gcmd.get("DIRECTION", 'z-')
+        pos = run_single_probe(self.probe, gcmd, direction)
+        gcmd.respond_info(f"Result is {pos[0]}, {pos[1]}, {pos[2]}")
         self.last_z_result = pos[2]
     def probe_calibrate_finalize(self, kin_pos):
         if kin_pos is None:
@@ -561,9 +562,9 @@ class ProbePointsHelper:
         self._manual_probe_start()
 
 # Helper to obtain a single probe measurement
-def run_single_probe(probe, gcmd):
+def run_single_probe(probe, gcmd, direction='z-'):
     probe_session = probe.start_probe_session(gcmd)
-    probe_session.run_probe(gcmd)
+    probe_session.run_probe(gcmd, direction)
     pos = probe_session.pull_probed_results()[0]
     probe_session.end_probe_session()
     return pos
