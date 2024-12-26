@@ -579,20 +579,18 @@ class ProbeEndstopWrapper:
     def __init__(self, config):
         self.printer = config.get_printer()
         self.position_endstop = 0.
-        self.stow_on_each_sample = config.getboolean(
-            'deactivate_on_each_sample', True)
+        self.stow_on_each_sample = config.getboolean('deactivate_on_each_sample', True)
         gcode_macro = self.printer.load_object(config, 'gcode_macro')
-        self.activate_gcode = gcode_macro.load_template(
-            config, 'activate_gcode', '')
-        self.deactivate_gcode = gcode_macro.load_template(
-            config, 'deactivate_gcode', '')
+        self.activate_gcode = gcode_macro.load_template(config, 'activate_gcode', '')
+        self.deactivate_gcode = gcode_macro.load_template(config, 'deactivate_gcode', '')
         # Create an "endstop" object to handle the probe pin
         ppins = self.printer.lookup_object('pins')
         self.mcu_endstop = ppins.setup_pin('endstop', config.get('pin'))
+        self.printer.register_event_handler('klippy:mcu_identify', self._handle_mcu_identify)
         # Wrappers
         self.get_mcu = self.mcu_endstop.get_mcu
         self.add_stepper = self.mcu_endstop.add_stepper
-        self.get_steppers = self.mcu_endstop.get_steppers
+        self.get_steppers = self._get_steppers
         self.home_start = self.mcu_endstop.home_start
         self.home_wait = self.mcu_endstop.home_wait
         self.query_endstop = self.mcu_endstop.query_endstop
@@ -636,6 +634,20 @@ class ProbeEndstopWrapper:
             self._raise_probe()
     def get_position_endstop(self):
         return self.position_endstop
+
+    def _get_steppers(self):
+        if self.idex and self.axis == 'x':
+            dual_carriage = self.printer.lookup_object('dual_carriage')
+            prime_rail = dual_carriage.get_primary_rail()
+            return prime_rail.get_rail().get_steppers()
+        else:
+            return self.mcu_endstop.get_steppers()
+
+    def _handle_mcu_identify(self):
+        kin = self.printer.lookup_object('toolhead').get_kinematics()
+        for stepper in kin.get_steppers():
+            if stepper.is_active_axis(self.axis):
+                self.add_stepper(stepper)
 
 # Main external probe interface
 class RockingProbe:
