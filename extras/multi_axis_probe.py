@@ -376,20 +376,6 @@ class ProbeSessionHelper:
                             kin_status['axis_minimum'][axis])
         return pos
 
-    def _calc_mean(self, positions):
-        count = float(len(positions))
-        return [sum([pos[i] for pos in positions]) / count
-                for i in range(3)]
-
-    def _calc_median(self, positions, axis):
-        axis_sorted = sorted(positions, key=(lambda p: p[axis]))
-        middle = len(positions) // 2
-        if (len(positions) & 1) == 1:
-            # odd number of samples
-            return axis_sorted[middle]
-        # even number of samples
-        return self._calc_mean(axis_sorted[middle - 1:middle + 1])
-
     def run_probe(self, gcmd, direction='z-'):
         if not self.multi_probe_pending:
             self._probe_state_error()
@@ -414,8 +400,6 @@ class ProbeSessionHelper:
             # Check samples tolerance
             axis_positions = [p[axis] for p in positions]
             if max(axis_positions)-min(axis_positions) > params['samples_tolerance']:
-            # z_positions = [p[2] for p in positions]
-            # if max(z_positions)-min(z_positions) > params['samples_tolerance']:
                 if retries >= params['samples_tolerance_retries']:
                     raise gcmd.error("Probe samples exceed samples_tolerance")
                 gcmd.respond_info("Probe samples exceed tolerance. Retrying...")
@@ -426,12 +410,28 @@ class ProbeSessionHelper:
                 liftpos = start_position
                 liftpos[axis] = pos[axis] - sense * params['sample_retract_dist']
                 toolhead.manual_move(liftpos, params['lift_speed'])
-                # toolhead.manual_move(
-                #     probexy + [pos[2] + params['sample_retract_dist']],
-                #     params['lift_speed'])
+
         # Calculate result
-        epos = calc_probe_z_average(positions, params['samples_result'])
-        self.results.append(epos)
+        result_position = self._calculate_results(positions, params['samples_result'], axis)
+        self.results.append(result_position)
+
+    def _calculate_results(self, positions, samples_result, axis):
+        if samples_result == 'median':
+            return self._calc_median(positions, axis)
+        return self._calc_mean(positions)
+    def _calc_mean(self, positions):
+        count = float(len(positions))
+        return [sum([pos[i] for pos in positions]) / count
+                for i in range(3)]
+
+    def _calc_median(self, positions, axis):
+        axis_sorted = sorted(positions, key=(lambda p: p[axis]))
+        middle = len(positions) // 2
+        if (len(positions) & 1) == 1:
+            # odd number of samples
+            return axis_sorted[middle]
+        # even number of samples
+        return self._calc_mean(axis_sorted[middle - 1:middle + 1])
 
     def pull_probed_results(self):
         res = self.results
