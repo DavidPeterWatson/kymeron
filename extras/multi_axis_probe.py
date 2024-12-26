@@ -112,8 +112,10 @@ class ProbeCommandHelper:
             pos = toolhead.get_position()
             liftpos = [None, None, None]
             liftpos[axis] = [pos[axis] - sense * params['sample_retract_dist']]
+            gcmd.respond_info(f'liftpos {liftpos[0]}, {liftpos[1]}, {liftpos[2]}')
             self._move(liftpos, params['lift_speed'])
         positions = probe_session.pull_probed_results()
+        gcmd.respond_info(f'probed_results {positions[0]}, {positions[1]}, {positions[2]}')
         probe_session.end_probe_session(direction)
         # Calculate maximum, minimum and average values
         max_value = max([p[axis] for p in positions])
@@ -139,15 +141,7 @@ class ProbeSessionHelper:
         self.mcu_probes = mcu_probes
         gcode = self.printer.lookup_object('gcode')
         self.dummy_gcode_cmd = gcode.create_gcode_command("", "", {})
-        # Infer Z position to move to during a probe
-        if config.has_section('stepper_z'):
-            zconfig = config.getsection('stepper_z')
-            self.z_position = zconfig.getfloat('position_min', 0.,
-                                               note_valid=False)
-        else:
-            pconfig = config.getsection('printer')
-            self.z_position = pconfig.getfloat('minimum_z_position', 0.,
-                                               note_valid=False)
+
         # Configurable probing speeds
         self.speed = config.getfloat('speed', 5.0, above=0.)
         self.lift_speed = config.getfloat('lift_speed', self.speed, above=0.)
