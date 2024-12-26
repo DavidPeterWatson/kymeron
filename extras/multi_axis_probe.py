@@ -331,7 +331,7 @@ class ProbeSessionHelper:
             toolhead.manual_move(liftpos, rocking_lift_speed)
             rocks += 1
         # Allow axis_twist_compensation to update results
-        self.printer.send_event("probe:update_results", epos)
+        self.printer.send_event("probe:update_results", pos)
         gcode = self.printer.lookup_object('gcode')
         gcode.respond_info(f"Probe made contact in {direction} direction at {pos[0]},{pos[1]},{pos[2]}")
         return pos
@@ -376,6 +376,20 @@ class ProbeSessionHelper:
                             kin_status['axis_minimum'][axis])
         return pos
 
+    def _calc_mean(self, positions):
+        count = float(len(positions))
+        return [sum([pos[i] for pos in positions]) / count
+                for i in range(3)]
+
+    def _calc_median(self, positions, axis):
+        axis_sorted = sorted(positions, key=(lambda p: p[axis]))
+        middle = len(positions) // 2
+        if (len(positions) & 1) == 1:
+            # odd number of samples
+            return axis_sorted[middle]
+        # even number of samples
+        return self._calc_mean(axis_sorted[middle - 1:middle + 1])
+
     def run_probe(self, gcmd, direction='z-'):
         if not self.multi_probe_pending:
             self._probe_state_error()
@@ -411,6 +425,7 @@ class ProbeSessionHelper:
         # Calculate result
         epos = calc_probe_z_average(positions, params['samples_result'])
         self.results.append(epos)
+
     def pull_probed_results(self):
         res = self.results
         self.results = []
