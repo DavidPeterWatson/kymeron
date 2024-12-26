@@ -110,7 +110,7 @@ class ProbeCommandHelper:
             # Retract
             gcmd.respond_info('retracting')
             pos = toolhead.get_position()
-            liftpos = [None, None, None]
+            liftpos = pos
             liftpos[axis] = [pos[axis] - sense * params['sample_retract_dist']]
             gcmd.respond_info(f'liftpos {liftpos[0]}, {liftpos[1]}, {liftpos[2]}')
             self._move(liftpos, params['lift_speed'])
