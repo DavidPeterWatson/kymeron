@@ -108,9 +108,10 @@ class ProbeCommandHelper:
             probe_session.run_probe(fo_gcmd, direction)
             probe_num += 1
             # Retract
+            gcmd.respond_info('retracting')
             pos = toolhead.get_position()
             liftpos = [None, None, None]
-            liftpos[axis] = [pos[axis] + sense * params['sample_retract_dist']]
+            liftpos[axis] = [pos[axis] - sense * params['sample_retract_dist']]
             self._move(liftpos, params['lift_speed'])
         positions = probe_session.pull_probed_results()
         probe_session.end_probe_session(direction)
