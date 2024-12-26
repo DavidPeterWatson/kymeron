@@ -15,7 +15,7 @@ can travel further (the Z minimum position can be negative).
 """
 
 # Calculate the average Z from a set of positions
-def calc_probe_z_average(positions, method='average'):
+def calc_probe_average(positions, method='average'):
     if method != 'median':
         # Use mean average
         count = float(len(positions))
@@ -28,7 +28,7 @@ def calc_probe_z_average(positions, method='average'):
         # odd number of samples
         return z_sorted[middle]
     # even number of samples
-    return calc_probe_z_average(z_sorted[middle-1:middle+1], 'average')
+    return calc_probe_average(z_sorted[middle-1:middle+1], 'average')
 
 
 ######################################################################
@@ -58,6 +58,7 @@ class ProbeCommandHelper:
 
     def _move(self, coord, speed):
         self.printer.lookup_object('toolhead').manual_move(coord, speed)
+
     def get_status(self, eventtime):
         return {'name': self.name,
                 'last_query': self.last_state,
@@ -84,6 +85,7 @@ class ProbeCommandHelper:
     def cmd_PROBE_ACCURACY(self, gcmd):
         params = self.probe.get_probe_params(gcmd)
         direction = gcmd.get("DIRECTION", 'z-')
+        (axis, sense) = direction_types[direction]
         sample_count = gcmd.get_int("SAMPLES", 10, minval=1)
         toolhead = self.printer.lookup_object('toolhead')
         pos = toolhead.get_position()
@@ -103,20 +105,21 @@ class ProbeCommandHelper:
         probe_num = 0
         while probe_num < sample_count:
             # Probe position
-            probe_session.run_probe(fo_gcmd)
+            probe_session.run_probe(fo_gcmd, direction)
             probe_num += 1
             # Retract
             pos = toolhead.get_position()
-            liftpos = [None, None, pos[2] + params['sample_retract_dist']]
+            liftpos = [None, None, None]
+            liftpos[axis] = [pos[axis] + sense * params['sample_retract_dist']]
             self._move(liftpos, params['lift_speed'])
         positions = probe_session.pull_probed_results()
         probe_session.end_probe_session(direction)
         # Calculate maximum, minimum and average values
-        max_value = max([p[2] for p in positions])
-        min_value = min([p[2] for p in positions])
+        max_value = max([p[axis] for p in positions])
+        min_value = min([p[axis] for p in positions])
         range_value = max_value - min_value
-        avg_value = calc_probe_z_average(positions, 'average')[2]
-        median = calc_probe_z_average(positions, 'median')[2]
+        avg_value = calc_probe_average(positions, 'average')[axis]
+        median = calc_probe_average(positions, 'median')[axis]
         # calculate the standard deviation
         deviation_sum = 0
         for i in range(len(positions)):
@@ -154,12 +157,9 @@ class ProbeSessionHelper:
         self.sample_retract_dist = config.getfloat('sample_retract_dist', 2.,
                                                    above=0.)
         atypes = ['median', 'average']
-        self.samples_result = config.getchoice('samples_result', atypes,
-                                               'average')
-        self.samples_tolerance = config.getfloat('samples_tolerance', 0.100,
-                                                 minval=0.)
-        self.samples_retries = config.getint('samples_tolerance_retries', 0,
-                                             minval=0)
+        self.samples_result = config.getchoice('samples_result', atypes, 'average')
+        self.samples_tolerance = config.getfloat('samples_tolerance', 0.100, minval=0.)
+        self.samples_retries = config.getint('samples_tolerance_retries', 0, minval=0)
         # Session state
         self.multi_probe_pending = False
         self.results = []
@@ -224,7 +224,6 @@ class ProbeSessionHelper:
         rocking_lift_speed = rocking_speed * 2.0
         while rocks < rocking_count:
             pos = self._probe(rocking_speed, direction)
-            gcode.respond_info(f"After probing move on _rocking_probe")
             rocking_speed = rocking_speed * 0.1
             rocking_retract_dist = rocking_speed * 3.0
             liftpos = probe_start
@@ -495,7 +494,6 @@ class ProbeEndstopWrapper:
         self.multi = 'OFF'
     def probing_move(self, pos, speed):
         gcode = self.printer.lookup_object('gcode')
-        gcode.respond_info(f"Start probing move on ProbeEndstopWrapper")
         phoming = self.printer.lookup_object('homing')
         return phoming.probing_move(self, pos, speed)
     def probe_prepare(self, hmove):
@@ -528,14 +526,18 @@ class MultiAxisRockingProbe:
         self.probe_offsets = ProbeOffsetsHelper(config)
         self.probe_session = ProbeSessionHelper(config, self.mcu_probes)
         self.printer.add_object('probe', self)
+
     def get_probe_params(self, gcmd=None):
         return self.probe_session.get_probe_params(gcmd)
+
     def get_offsets(self):
         return self.probe_offsets.get_offsets()
+
     def get_status(self, eventtime):
         return self.cmd_helper.get_status(eventtime)
-    def start_probe_session(self, gcmd):
-        return self.probe_session.start_probe_session(gcmd)
+
+    def start_probe_session(self, gcmd, direction='z-'):
+        return self.probe_session.start_probe_session(gcmd, direction)
     
 
 def load_config(config):
