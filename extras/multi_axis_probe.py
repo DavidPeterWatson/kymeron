@@ -390,7 +390,6 @@ class ProbeSessionHelper:
         gcode.respond_info(f"Probing {axis} axis with {sense} sense")
         toolhead = self.printer.lookup_object('toolhead')
         start_position = self.printer.lookup_object('toolhead').get_position()
-        # probexy = toolhead.get_position()[:2]
         retries = 0
         positions = []
         sample_count = params['samples']
