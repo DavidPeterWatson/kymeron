@@ -317,6 +317,7 @@ class ProbeSessionHelper:
 
     def _rocking_probe(self, speed, direction='z-'):
         toolhead = self.printer.lookup_object('toolhead')
+        gcode = self.printer.lookup_object('gcode')
         probe_start = toolhead.get_position()
         (axis, sense) = direction_types[direction]
         rocking_count = 3
@@ -325,6 +326,7 @@ class ProbeSessionHelper:
         rocking_lift_speed = rocking_speed * 2.0
         while rocks < rocking_count:
             pos = self._probe(rocking_speed, direction)
+            gcode.respond_info(f"After probing move on _rocking_probe")
             rocking_speed = rocking_speed * 0.1
             rocking_retract_dist = rocking_speed * 3.0
             liftpos = probe_start
@@ -333,7 +335,6 @@ class ProbeSessionHelper:
             rocks += 1
         # Allow axis_twist_compensation to update results
         # self.printer.send_event("probe:update_results", pos)
-        gcode = self.printer.lookup_object('gcode')
         gcode.respond_info(f"Probe made contact in {direction} direction at {pos[0]},{pos[1]},{pos[2]}")
         return pos
 
@@ -621,6 +622,8 @@ class ProbeEndstopWrapper:
         self._raise_probe()
         self.multi = 'OFF'
     def probing_move(self, pos, speed):
+        gcode = self.printer.lookup_object('gcode')
+        gcode.respond_info(f"Probing move on ProbeEndstopWrapper")
         phoming = self.printer.lookup_object('homing')
         return phoming.probing_move(self, pos, speed)
     def probe_prepare(self, hmove):
