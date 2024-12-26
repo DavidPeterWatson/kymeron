@@ -233,9 +233,9 @@ class HomingViaProbeHelper:
 
 # Helper to track multiple probe attempts in a single command
 class ProbeSessionHelper:
-    def __init__(self, config, mcu_probe):
+    def __init__(self, config, mcu_probes):
         self.printer = config.get_printer()
-        self.mcu_probe = mcu_probe
+        self.mcu_probes = mcu_probes
         gcode = self.printer.lookup_object('gcode')
         self.dummy_gcode_cmd = gcode.create_gcode_command("", "", {})
         # Infer Z position to move to during a probe
@@ -247,7 +247,7 @@ class ProbeSessionHelper:
             pconfig = config.getsection('printer')
             self.z_position = pconfig.getfloat('minimum_z_position', 0.,
                                                note_valid=False)
-        self.homing_helper = HomingViaProbeHelper(config, mcu_probe)
+        self.homing_helper = HomingViaProbeHelper(config, mcu_probes[2])
         # Configurable probing speeds
         self.speed = config.getfloat('speed', 5.0, above=0.)
         self.lift_speed = config.getfloat('lift_speed', self.speed, above=0.)
@@ -279,19 +279,21 @@ class ProbeSessionHelper:
     def _probe_state_error(self):
         raise self.printer.command_error(
             "Internal probe error - start/end probe session mismatch")
-    def start_probe_session(self, gcmd):
+    def start_probe_session(self, gcmd, direction='z-'):
         if self.multi_probe_pending:
             self._probe_state_error()
-        self.mcu_probe.multi_probe_begin()
+        (axis, sense) = direction_types[direction]
+        self.mcu_probes[axis].multi_probe_begin()
         self.multi_probe_pending = True
         self.results = []
         return self
-    def end_probe_session(self):
+    def end_probe_session(self, direction='z-'):
         if not self.multi_probe_pending:
             self._probe_state_error()
+        (axis, sense) = direction_types[direction]
         self.results = []
         self.multi_probe_pending = False
-        self.mcu_probe.multi_probe_end()
+        self.mcu_probes[axis].multi_probe_end()
     def get_probe_params(self, gcmd=None):
         if gcmd is None:
             gcmd = self.dummy_gcode_cmd
@@ -339,12 +341,11 @@ class ProbeSessionHelper:
         return pos
 
     def _probe(self, speed, direction='z-'):
-        toolhead = self.printer.lookup_object('toolhead')
         self.check_homed()
         (axis, sense) = direction_types[direction]
         pos = self._get_target_position(direction)
         try:
-            epos = self.mcu_probe.probing_move(pos, speed)
+            epos = self.mcu_probes[axis].probing_move(pos, speed)
         except self.printer.command_error as e:
             reason = str(e)
             if "Timeout during endstop homing" in reason:
@@ -576,8 +577,9 @@ def run_single_probe(probe, gcmd, direction='z-'):
 
 # Endstop wrapper that enables probe specific features
 class ProbeEndstopWrapper:
-    def __init__(self, config):
+    def __init__(self, config, axis_name):
         self.printer = config.get_printer()
+        self.axis_name = axis_name
         self.position_endstop = 0.
         self.stow_on_each_sample = config.getboolean('deactivate_on_each_sample', True)
         gcode_macro = self.printer.load_object(config, 'gcode_macro')
@@ -621,7 +623,7 @@ class ProbeEndstopWrapper:
         self.multi = 'OFF'
     def probing_move(self, pos, speed):
         gcode = self.printer.lookup_object('gcode')
-        gcode.respond_info(f"Probing move on ProbeEndstopWrapper")
+        gcode.respond_info(f"Start probing move on ProbeEndstopWrapper")
         phoming = self.printer.lookup_object('homing')
         return phoming.probing_move(self, pos, speed)
     def probe_prepare(self, hmove):
@@ -638,17 +640,21 @@ class ProbeEndstopWrapper:
     def _handle_mcu_identify(self):
         kin = self.printer.lookup_object('toolhead').get_kinematics()
         for stepper in kin.get_steppers():
-            # if stepper.is_active_axis(self.axis):
-            self.add_stepper(stepper)
+            if stepper.is_active_axis(self.axis_name):
+                self.add_stepper(stepper)
 
 # Main external probe interface
 class RockingProbe:
     def __init__(self, config):
         self.printer = config.get_printer()
-        self.mcu_probe = ProbeEndstopWrapper(config)
-        self.cmd_helper = ProbeCommandHelper(config, self, self.mcu_probe.query_endstop)
+        self.mcu_probes = [
+            ProbeEndstopWrapper(config, 'x'),
+            ProbeEndstopWrapper(config, 'y'),
+            ProbeEndstopWrapper(config, 'z')
+        ]
+        self.cmd_helper = ProbeCommandHelper(config, self, self.mcu_probes[2].query_endstop)
         self.probe_offsets = ProbeOffsetsHelper(config)
-        self.probe_session = ProbeSessionHelper(config, self.mcu_probe)
+        self.probe_session = ProbeSessionHelper(config, self.mcu_probes)
         self.printer.add_object('probe', self)
     def get_probe_params(self, gcmd=None):
         return self.probe_session.get_probe_params(gcmd)
