@@ -590,7 +590,7 @@ class ProbeEndstopWrapper:
         # Wrappers
         self.get_mcu = self.mcu_endstop.get_mcu
         self.add_stepper = self.mcu_endstop.add_stepper
-        self.get_steppers = self._get_steppers
+        self.get_steppers = self.mcu_endstop.get_steppers
         self.home_start = self.mcu_endstop.home_start
         self.home_wait = self.mcu_endstop.home_wait
         self.query_endstop = self.mcu_endstop.query_endstop
@@ -635,19 +635,11 @@ class ProbeEndstopWrapper:
     def get_position_endstop(self):
         return self.position_endstop
 
-    def _get_steppers(self):
-        if self.idex and self.axis == 'x':
-            dual_carriage = self.printer.lookup_object('dual_carriage')
-            prime_rail = dual_carriage.get_primary_rail()
-            return prime_rail.get_rail().get_steppers()
-        else:
-            return self.mcu_endstop.get_steppers()
-
     def _handle_mcu_identify(self):
         kin = self.printer.lookup_object('toolhead').get_kinematics()
         for stepper in kin.get_steppers():
-            if stepper.is_active_axis(self.axis):
-                self.add_stepper(stepper)
+            # if stepper.is_active_axis(self.axis):
+            self.add_stepper(stepper)
 
 # Main external probe interface
 class RockingProbe:
