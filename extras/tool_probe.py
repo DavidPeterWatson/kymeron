@@ -1,20 +1,8 @@
-# Nozzle alignment module for 3d kinematic probes.
-#
-# This module has been adapted from code written by Kevin O'Connor <kevin@koconnor.net> and Martin Hierholzer <martin@hierholzer.info>
-# Sourced from https://github.com/ben5459/Klipper_ToolChanger/blob/master/probe_multi_axis.py
-
 import logging
 import time
 
 direction_types = {'x+': [0, +1], 'x-': [0, -1], 'y+': [1, +1], 'y-': [1, -1],
                    'z+': [2, +1], 'z-': [2, -1]}
-
-HINT_TIMEOUT = """
-If the probe did not move far enough to trigger, then
-consider reducing/increasing the axis minimum/maximum
-position so the probe can travel further (the minimum
-position can be negative).
-"""
 
 
 class ToolProbe:
@@ -47,9 +35,9 @@ class ToolProbe:
         self.gcode.register_command('CALIBRATE_TOOL_OFFSET',
                                     self.cmd_CALIBRATE_TOOL_OFFSET,
                                     desc=self.cmd_CALIBRATE_TOOL_OFFSET_help)
-        self.gcode.register_command('QUERY_TOOL_PROBE',
-                                    self.cmd_QUERY_TOOL_PROBE,
-                                    desc=self.cmd_QUERY_TOOL_PROBE_help)
+        # self.gcode.register_command('QUERY_TOOL_PROBE',
+        #                             self.cmd_QUERY_TOOL_PROBE,
+        #                             desc=self.cmd_QUERY_TOOL_PROBE_help)
 
     cmd_LOCATE_TOOL_PROBE_help = ("Locate the tool probe with bed probe")
     def cmd_LOCATE_TOOL_PROBE(self, gcmd):
@@ -77,13 +65,12 @@ class ToolProbe:
         toolhead = self.printer.lookup_object('toolhead')
         position = toolhead.get_position()
         
-        downPos = probe_session.run_probe(gcmd, "z-") # samples = 1
+        downPos = probe_session.run_probe(gcmd, "z-")
         center_x, center_y = self.calibrate_xy(toolhead, downPos, probe_session, gcmd)
 
-        toolhead.manual_move([None, None, downPos[2] + self.lift_z],
-                             self.travel_speed)
+        toolhead.manual_move([None, None, downPos[2] + self.lift_z], self.travel_speed)
         toolhead.manual_move([center_x, center_y, None], self.travel_speed)
-        center_z = probe_session.run_probe("z-", gcmd, speed_ratio=0.5)[
+        center_z = probe_session.run_probe(gcmd, "z-", speed_ratio=0.5)[
             2]
         # Now redo X and Y, since we have a more accurate center.
         center_x, center_y = self.calibrate_xy(toolhead,
@@ -123,13 +110,13 @@ class ToolProbe:
                 'last_y_result': self.last_result[1],
                 'last_z_result': self.last_result[2]}
 
-    cmd_QUERY_TOOL_PROBE_help = "Return the state of calibration probe"
-    def cmd_QUERY_TOOL_PROBE(self, gcmd):
-        toolhead = self.printer.lookup_object('toolhead')
-        print_time = toolhead.get_last_move_time()
-        endstop_states = [probe.query_endstop(print_time) for probe in self.probe.mcu_probes] # Check the state of each axis probe (x, y, z)
-        self.calibration_probe_inactive = any(endstop_states)
-        gcmd.respond_info("Calibration Probe: %s" % (["open", "TRIGGERED"][any(endstop_states)]))
+    # cmd_QUERY_TOOL_PROBE_help = "Return the state of calibration probe"
+    # def cmd_QUERY_TOOL_PROBE(self, gcmd):
+    #     toolhead = self.printer.lookup_object('toolhead')
+    #     print_time = toolhead.get_last_move_time()
+    #     endstop_states = [probe.query_endstop(print_time) for probe in self.probe.mcu_probes] # Check the state of each axis probe (x, y, z)
+    #     self.calibration_probe_inactive = any(endstop_states)
+    #     gcmd.respond_info("Calibration Probe: %s" % (["open", "TRIGGERED"][any(endstop_states)]))
 
 def load_config(config):
     return ToolProbe(config)
