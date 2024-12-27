@@ -30,7 +30,6 @@ class ToolProbe:
         self.lower_z = config.getfloat('lower_z', 0.5)
         self.lift_z = config.getfloat('lift_z', 1.0)
         self.trigger_to_bottom_z = config.getfloat('trigger_to_bottom_z', default=0.0)
-        self.lift_speed = config.getfloat('lift_speed', default=self.probe.lift_speed)
         self.final_lift_z = config.getfloat('final_lift_z', 4.0)
         self.sensor_location = None
         self.last_result = [0., 0., 0.]
@@ -72,13 +71,13 @@ class ToolProbe:
     def locate_sensor(self, gcmd):
         toolhead = self.printer.lookup_object('toolhead')
         position = toolhead.get_position()
-        downPos = self.probe.run_probe(gcmd, "z-") # samples = 1
+        downPos = self.probe.probe_session.run_probe(gcmd, "z-") # samples = 1
         center_x, center_y = self.calibrate_xy(toolhead, downPos, gcmd, samples=1)
 
         toolhead.manual_move([None, None, downPos[2] + self.lift_z],
-                             self.lift_speed)
+                             self.travel_speed)
         toolhead.manual_move([center_x, center_y, None], self.travel_speed)
-        center_z = self.probe.run_probe("z-", gcmd, speed_ratio=0.5)[
+        center_z = self.probe.probe_session.run_probe("z-", gcmd, speed_ratio=0.5)[
             2]
         # Now redo X and Y, since we have a more accurate center.
         center_x, center_y = self.calibrate_xy(toolhead,
@@ -89,9 +88,8 @@ class ToolProbe:
         position[0] = center_x
         position[1] = center_y
         position[2] = center_z + self.final_lift_z
-        toolhead.manual_move([None, None, position[2]], self.lift_speed)
-        toolhead.manual_move([position[0], position[1], None],
-                             self.travel_speed)
+        toolhead.manual_move([None, None, position[2]], self.travel_speed)
+        toolhead.manual_move([position[0], position[1], None], self.travel_speed)
         toolhead.set_position(position)
         return [center_x, center_y, center_z]
 
@@ -106,10 +104,10 @@ class ToolProbe:
         offset = direction_types[direction]
         start_pos = list(top_pos)
         start_pos[offset[0]] -= offset[1] * self.spread
-        toolhead.manual_move([None, None, top_pos[2] + self.lift_z], self.lift_speed)
+        toolhead.manual_move([None, None, top_pos[2] + self.lift_z], self.travel_speed)
         toolhead.manual_move([start_pos[0], start_pos[1], None], self.travel_speed)
-        toolhead.manual_move([None, None, top_pos[2] - self.lower_z], self.lift_speed)
-        return self.probe.run_probe(gcmd, direction)[offset[0]]
+        toolhead.manual_move([None, None, top_pos[2] - self.lower_z], self.travel_speed)
+        return self.probe.probe_session.run_probe(gcmd, direction)[offset[0]]
 
     def get_status(self):
         return {'last_result': self.last_result,
