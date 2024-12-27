@@ -17,15 +17,15 @@ class ToolProbe:
         self.y_pos = config.getfloat('y_pos')
         self.z_pos = config.getfloat('z_pos')
 
-        # self.spread = config.getfloat('spread', 5.0)
-        # self.lower_z = config.getfloat('lower_z', 0.5)
-        # self.lift_z = config.getfloat('lift_z', 1.0)
-        # self.trigger_to_bottom_z = config.getfloat('trigger_to_bottom_z', default=0.0)
-        # self.final_lift_z = config.getfloat('final_lift_z', 4.0)
-        # self.sensor_location = None
-        # self.last_result = [0., 0., 0.]
-        # self.last_probe_offset = 0.
-        # self.calibration_probe_inactive = True
+        self.spread = config.getfloat('spread', 5.0)
+        self.lower_z = config.getfloat('lower_z', 0.5)
+        self.lift_z = config.getfloat('lift_z', 1.0)
+        self.trigger_to_bottom_z = config.getfloat('trigger_to_bottom_z', default=0.0)
+        self.final_lift_z = config.getfloat('final_lift_z', 4.0)
+        self.sensor_location = None
+        self.last_result = [0., 0., 0.]
+        self.last_probe_offset = 0.
+        self.calibration_probe_inactive = True
 
         # # Register commands
         # self.gcode = self.printer.lookup_object('gcode')
