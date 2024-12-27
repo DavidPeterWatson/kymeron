@@ -40,7 +40,7 @@ class ToolProbe:
         probe = self.printer.lookup_object(self.probe_name)
         probe_session = probe.start_probe_session(gcmd)
         self.last_result = self.locate_sensor(probe_session, gcmd)
-        probe_session.end_probe_session(gcmd)
+        probe_session.end_probe_session()
         self.sensor_location = self.last_result
         self.gcode.respond_info("Sensor location at %.6f,%.6f,%.6f"
                                 % (self.last_result[0], self.last_result[1],
@@ -59,40 +59,29 @@ class ToolProbe:
     #                                self.last_result[2]))
 
     def locate_sensor(self, probe_session, gcmd):
-        try:
-            toolhead = self.printer.lookup_object('toolhead')
-            position = toolhead.get_position()
-            
-            self.gcode.respond_info('1')
-            downPos = probe_session.run_probe(gcmd, "z-")
-            self.gcode.respond_info(f'downPos {downPos[0]}, {downPos[1]}, {downPos[2]}')
-            self.gcode.respond_info('2')
-            center_x, center_y = self.calibrate_xy(toolhead, downPos, probe_session, gcmd)
-            self.gcode.respond_info('3')
-            toolhead.manual_move([None, None, downPos[2] + self.lift_z], self.travel_speed)
-            self.gcode.respond_info('4')
-            toolhead.manual_move([center_x, center_y, None], self.travel_speed)
-            self.gcode.respond_info('5')
-            center_z = probe_session.run_probe(gcmd, "z-")[2]
-            self.gcode.respond_info('6')
-            # Now redo X and Y, since we have a more accurate center.
-            center_x, center_y = self.calibrate_xy(toolhead, [center_x, center_y, center_z], probe_session, gcmd)
-            self.gcode.respond_info('7')
+        toolhead = self.printer.lookup_object('toolhead')
+        position = toolhead.get_position()
+        
+        downPos = probe_session.run_probe(gcmd, "z-")
+        self.gcode.respond_info(f'downPos {downPos[0]}, {downPos[1]}, {downPos[2]}')
+        center_x, center_y = self.calibrate_xy(toolhead, downPos, probe_session, gcmd)
+        toolhead.manual_move([None, None, downPos[2] + self.lift_z], self.travel_speed)
+        toolhead.manual_move([center_x, center_y, None], self.travel_speed)
+        center_z = probe_session.run_probe(gcmd, "z-")[2]
+        # Now redo X and Y, since we have a more accurate center.
+        center_x, center_y = self.calibrate_xy(toolhead, [center_x, center_y, center_z], probe_session, gcmd)
 
-            # rest above center
-            position[0] = center_x
-            position[1] = center_y
-            position[2] = center_z + self.final_lift_z
-            self.gcode.respond_info('8')
-            toolhead.manual_move([None, None, position[2]], self.travel_speed)
-            self.gcode.respond_info('9')
-            toolhead.manual_move([position[0], position[1], None], self.travel_speed)
-            self.gcode.respond_info('10')
-            toolhead.set_position(position)
-            return [center_x, center_y, center_z]
-        except self.printer.command_error as e:
-            reason = str(e)
-            raise self.printer.command_error(reason)
+        # rest above center
+        position[0] = center_x
+        position[1] = center_y
+        position[2] = center_z + self.final_lift_z
+        toolhead.manual_move([None, None, position[2]], self.travel_speed)
+        toolhead.manual_move([position[0], position[1], None], self.travel_speed)
+        self.gcode.respond_info('10')
+        toolhead.set_position(position)
+        self.gcode.respond_info('11')
+        return [center_x, center_y, center_z]
+
 
     def calibrate_xy(self, toolhead, top_pos, probe_session, gcmd):
         left_x = self.probe_xy(toolhead, top_pos, 'x+', probe_session, gcmd)
