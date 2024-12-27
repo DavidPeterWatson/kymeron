@@ -6,7 +6,6 @@ class ToolProbe:
         self.printer = config.get_printer()
         self.name = config.get_name()
         self.probe_name = config.get('probe', 'probe')
-        # self.probe = self.printer.lookup_object(self.probe_name)
 
         self.x_pos = config.getfloat('x_pos')
         self.y_pos = config.getfloat('y_pos')
@@ -98,13 +97,13 @@ class ToolProbe:
         toolhead.manual_move([None, None, top_pos[2] - self.lower_z], self.travel_speed)
         return probe_session.run_probe(gcmd, direction)[offset[0]]
 
-    # def get_status(self):
-    #     return {'last_result': self.last_result,
-    #             'last_probe_offset': self.last_probe_offset,
-    #             'calibration_probe_inactive': self.calibration_probe_inactive,
-    #             'last_x_result': self.last_result[0],
-    #             'last_y_result': self.last_result[1],
-    #             'last_z_result': self.last_result[2]}
+    def get_status(self):
+        return {'last_result': self.last_result,
+                'last_probe_offset': self.last_probe_offset,
+                'calibration_probe_inactive': self.calibration_probe_inactive,
+                'last_x_result': self.last_result[0],
+                'last_y_result': self.last_result[1],
+                'last_z_result': self.last_result[2]}
 
     # cmd_QUERY_TOOL_PROBE_help = "Return the state of calibration probe"
     # def cmd_QUERY_TOOL_PROBE(self, gcmd):
@@ -113,6 +112,7 @@ class ToolProbe:
     #     endstop_states = [probe.query_endstop(print_time) for probe in self.probe.mcu_probes] # Check the state of each axis probe (x, y, z)
     #     self.calibration_probe_inactive = any(endstop_states)
     #     gcmd.respond_info("Calibration Probe: %s" % (["open", "TRIGGERED"][any(endstop_states)]))
+
 
 def load_config(config):
     return ToolProbe(config)
