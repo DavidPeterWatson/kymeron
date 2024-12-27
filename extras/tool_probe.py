@@ -10,7 +10,7 @@ class ToolProbe:
         self.printer = config.get_printer()
         self.name = config.get_name()
         self.probe_name = config.get('probe', 'probe')
-        # # self.probe = self.printer.lookup_object(self.probe_name)
+        # self.probe = self.printer.lookup_object(self.probe_name)
 
         self.x_pos = config.getfloat('x_pos')
         self.y_pos = config.getfloat('y_pos')
@@ -28,7 +28,7 @@ class ToolProbe:
         self.calibration_probe_inactive = True
 
         # # Register commands
-        # self.gcode = self.printer.lookup_object('gcode')
+        self.gcode = self.printer.lookup_object('gcode')
         # self.gcode.register_command('LOCATE_TOOL_PROBE',
         #                             self.cmd_LOCATE_TOOL_PROBE,
         #                             desc=self.cmd_LOCATE_TOOL_PROBE_help)
