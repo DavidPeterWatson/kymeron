@@ -145,7 +145,7 @@ class ProbeSessionHelper:
         # Configurable probing speeds
         self.speed = config.getfloat('speed', 5.0, above=0.)
         self.lift_speed = config.getfloat('lift_speed', self.speed, above=0.)
-        # Rocking support (for improved accuracy)
+        # Bouncing support (for improved accuracy)
         self.max_distance = config.getfloat('max_distance', 10.0, above=0.)
         # Multi-sample support (for improved accuracy)
         self.sample_count = config.getint('samples', 1, minval=1)
@@ -226,7 +226,7 @@ class ProbeSessionHelper:
         sample_count = params['samples']
         while len(positions) < sample_count:
             # Probe position
-            pos = self._rocking_probe(params['probe_speed'], direction)
+            pos = self._bouncing_probe(params['probe_speed'], direction)
             positions.append(pos)
             # Check samples tolerance
             axis_positions = [p[axis] for p in positions]
@@ -246,23 +246,23 @@ class ProbeSessionHelper:
         result_position = self._calculate_results(positions, params['samples_result'], axis)
         self.results.append(result_position)
 
-    def _rocking_probe(self, speed, direction='z-'):
+    def _bouncing_probe(self, speed, direction='z-'):
         toolhead = self.printer.lookup_object('toolhead')
         gcode = self.printer.lookup_object('gcode')
         probe_start = toolhead.get_position()
         (axis, sense) = direction_types[direction]
-        rocking_count = 3
-        rocks = 0
-        rocking_speed = speed
-        rocking_lift_speed = rocking_speed * 2.0
-        while rocks < rocking_count:
-            pos = self._probe(rocking_speed, direction)
-            rocking_speed = rocking_speed * 0.1
-            rocking_retract_dist = rocking_speed * 3.0
+        bounce_count = 3
+        bounces = 0
+        bouncing_speed = speed
+        bouncing_lift_speed = bouncing_speed * 2.0
+        while bounces < bounce_count:
+            pos = self._probe(bouncing_speed, direction)
+            bouncing_speed = bouncing_speed * 0.1
+            bouncing_retract_dist = bouncing_speed * 3.0
             liftpos = probe_start
-            liftpos[axis] = pos[axis] - sense * rocking_retract_dist
-            toolhead.manual_move(liftpos, rocking_lift_speed)
-            rocks += 1
+            liftpos[axis] = pos[axis] - sense * bouncing_retract_dist
+            toolhead.manual_move(liftpos, bouncing_lift_speed)
+            bounces += 1
         # Allow axis_twist_compensation to update results
         self.printer.send_event("probe:update_results", pos)
         gcode.respond_info(f"Probe made contact in {direction} direction at {pos[0]},{pos[1]},{pos[2]}")
@@ -506,7 +506,7 @@ class ProbeEndstopWrapper:
                 self.add_stepper(stepper)
 
 # Main external probe interface
-class MultiAxisRockingProbe:
+class MultiAxisBouncingProbe:
     def __init__(self, config):
         self.name = config.get_name()
         self.printer = config.get_printer()
@@ -541,4 +541,4 @@ class MultiAxisRockingProbe:
     
 
 def load_config(config):
-    return MultiAxisRockingProbe(config)
+    return MultiAxisBouncingProbe(config)
