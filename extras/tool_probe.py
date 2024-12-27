@@ -30,7 +30,7 @@ class ToolProbe:
         self.lower_z = config.getfloat('lower_z', 0.5)
         self.lift_z = config.getfloat('lift_z', 1.0)
         self.trigger_to_bottom_z = config.getfloat('trigger_to_bottom_z', default=0.0)
-        self.lift_speed = config.getfloat('lift_speed', self.probe.lift_speed)
+        self.lift_speed = config.getfloat('lift_speed', default=self.probe.lift_speed)
         self.final_lift_z = config.getfloat('final_lift_z', 4.0)
         self.sensor_location = None
         self.last_result = [0., 0., 0.]
