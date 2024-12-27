@@ -44,6 +44,7 @@ class ToolProbe:
         probe = self.printer.lookup_object(self.probe_name)
         probe_session = probe.start_probe_session(gcmd)
         self.last_result = self.locate_sensor(probe_session, gcmd)
+        probe_session.end_probe_session(gcmd)
         self.sensor_location = self.last_result
         self.gcode.respond_info("Sensor location at %.6f,%.6f,%.6f"
                                 % (self.last_result[0], self.last_result[1],
@@ -65,8 +66,11 @@ class ToolProbe:
         toolhead = self.printer.lookup_object('toolhead')
         position = toolhead.get_position()
         
+        self.gcode.respond_info('1')
         downPos = probe_session.run_probe(gcmd, "z-")
+        self.gcode.respond_info('2')
         center_x, center_y = self.calibrate_xy(toolhead, downPos, probe_session, gcmd)
+        self.gcode.respond_info('3')
 
         toolhead.manual_move([None, None, downPos[2] + self.lift_z], self.travel_speed)
         toolhead.manual_move([center_x, center_y, None], self.travel_speed)
