@@ -510,6 +510,13 @@ class MultiAxisRockingProbe:
     def __init__(self, config):
         self.name = config.get_name()
         self.printer = config.get_printer()
+
+        pin = config.get('pin')
+        buttons = self.printer.load_object(config, 'buttons')
+        ppins = self.printer.lookup_object('pins')
+        ppins.allow_multi_use_pin(pin.replace('^', '').replace('!', ''))
+        buttons.register_buttons([pin], self._button_handler)
+
         self.mcu_probes = [
             ProbeEndstopWrapper(config, 'x'),
             ProbeEndstopWrapper(config, 'y'),
