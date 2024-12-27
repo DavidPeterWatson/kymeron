@@ -22,7 +22,7 @@ class ToolProbe:
         self.printer = config.get_printer()
         self.name = config.get_name()
         self.probe_name = config.get('probe', 'probe')
-        self.probe = self.printer.lookup_object(self.probe_name)
+        # self.probe = self.printer.lookup_object(self.probe_name)
 
         self.travel_speed = config.getfloat('travel_speed', 10.0, above=0.)
         self.x_pos = config.getfloat('x_pos')
@@ -53,7 +53,9 @@ class ToolProbe:
 
     cmd_LOCATE_TOOL_PROBE_help = ("Locate the tool probe with bed probe")
     def cmd_LOCATE_TOOL_PROBE(self, gcmd):
-        self.last_result = self.locate_sensor(gcmd)
+        probe = self.printer.lookup_object(self.probe_name)
+        probe_session = probe.start_probe_session(gcmd)
+        self.last_result = self.locate_sensor(probe_session, gcmd)
         self.sensor_location = self.last_result
         self.gcode.respond_info("Sensor location at %.6f,%.6f,%.6f"
                                 % (self.last_result[0], self.last_result[1],
@@ -71,21 +73,22 @@ class ToolProbe:
                                 % (self.last_result[0], self.last_result[1],
                                    self.last_result[2]))
 
-    def locate_sensor(self, gcmd):
+    def locate_sensor(self, probe_session, gcmd):
         toolhead = self.printer.lookup_object('toolhead')
         position = toolhead.get_position()
-        downPos = self.probe.probe_session.run_probe(gcmd, "z-") # samples = 1
-        center_x, center_y = self.calibrate_xy(toolhead, downPos, gcmd, samples=1)
+        
+        downPos = probe_session.run_probe(gcmd, "z-") # samples = 1
+        center_x, center_y = self.calibrate_xy(toolhead, downPos, probe_session, gcmd)
 
         toolhead.manual_move([None, None, downPos[2] + self.lift_z],
                              self.travel_speed)
         toolhead.manual_move([center_x, center_y, None], self.travel_speed)
-        center_z = self.probe.probe_session.run_probe("z-", gcmd, speed_ratio=0.5)[
+        center_z = probe_session.run_probe("z-", gcmd, speed_ratio=0.5)[
             2]
         # Now redo X and Y, since we have a more accurate center.
         center_x, center_y = self.calibrate_xy(toolhead,
                                                [center_x, center_y, center_z],
-                                               gcmd)
+                                               probe_session, gcmd)
 
         # rest above center
         position[0] = center_x
@@ -96,21 +99,21 @@ class ToolProbe:
         toolhead.set_position(position)
         return [center_x, center_y, center_z]
 
-    def calibrate_xy(self, toolhead, top_pos, gcmd):
-        left_x = self.probe_xy(toolhead, top_pos, 'x+', gcmd)
-        right_x = self.probe_xy(toolhead, top_pos, 'x-', gcmd)
-        near_y = self.probe_xy(toolhead, top_pos, 'y+', gcmd)
-        far_y = self.probe_xy(toolhead, top_pos, 'y-', gcmd)
+    def calibrate_xy(self, toolhead, top_pos, probe_session, gcmd):
+        left_x = self.probe_xy(toolhead, top_pos, 'x+', probe_session, gcmd)
+        right_x = self.probe_xy(toolhead, top_pos, 'x-', probe_session, gcmd)
+        near_y = self.probe_xy(toolhead, top_pos, 'y+', probe_session, gcmd)
+        far_y = self.probe_xy(toolhead, top_pos, 'y-', probe_session, gcmd)
         return [(left_x + right_x) / 2., (near_y + far_y) / 2.]
 
-    def probe_xy(self, toolhead, top_pos, direction, gcmd):
+    def probe_xy(self, toolhead, top_pos, direction, probe_session, gcmd):
         offset = direction_types[direction]
         start_pos = list(top_pos)
         start_pos[offset[0]] -= offset[1] * self.spread
         toolhead.manual_move([None, None, top_pos[2] + self.lift_z], self.travel_speed)
         toolhead.manual_move([start_pos[0], start_pos[1], None], self.travel_speed)
         toolhead.manual_move([None, None, top_pos[2] - self.lower_z], self.travel_speed)
-        return self.probe.probe_session.run_probe(gcmd, direction)[offset[0]]
+        return probe_session.run_probe(gcmd, direction)[offset[0]]
 
     def get_status(self):
         return {'last_result': self.last_result,
