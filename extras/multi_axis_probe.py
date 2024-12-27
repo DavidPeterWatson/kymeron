@@ -1,4 +1,5 @@
 import logging
+import pins
 
 direction_types = {'x+': [0, +1], 'x-': [0, -1], 'y+': [1, +1], 'y-': [1, -1], 'z+': [2, +1], 'z-': [2, -1]}
 
@@ -7,7 +8,6 @@ If the probe did not move far enough to trigger, then
 consider reducing the Z axis minimum position so the probe
 can travel further (the Z minimum position can be negative).
 """
-
 
 
 class ProbeCommandHelper:
