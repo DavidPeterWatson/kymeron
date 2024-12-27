@@ -89,6 +89,7 @@ class ToolProbe:
         return [center_x, center_y, center_z]
 
     def calibrate_xy(self, toolhead, top_pos, probe_session, gcmd):
+        self.gcode.respond_info('4')
         left_x = self.probe_xy(toolhead, top_pos, 'x+', probe_session, gcmd)
         right_x = self.probe_xy(toolhead, top_pos, 'x-', probe_session, gcmd)
         near_y = self.probe_xy(toolhead, top_pos, 'y+', probe_session, gcmd)
@@ -96,10 +97,15 @@ class ToolProbe:
         return [(left_x + right_x) / 2., (near_y + far_y) / 2.]
 
     def probe_xy(self, toolhead, top_pos, direction, probe_session, gcmd):
+        self.gcode.respond_info('5')
         offset = direction_types[direction]
+        self.gcode.respond_info('6')
         start_pos = list(top_pos)
+        self.gcode.respond_info('7')
         start_pos[offset[0]] -= offset[1] * self.spread
+        self.gcode.respond_info('8')
         toolhead.manual_move([None, None, top_pos[2] + self.lift_z], self.travel_speed)
+        self.gcode.respond_info('9')
         toolhead.manual_move([start_pos[0], start_pos[1], None], self.travel_speed)
         toolhead.manual_move([None, None, top_pos[2] - self.lower_z], self.travel_speed)
         return probe_session.run_probe(gcmd, direction)[offset[0]]
