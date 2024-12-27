@@ -1,9 +1,5 @@
-import logging
-import time
-
 direction_types = {'x+': [0, +1], 'x-': [0, -1], 'y+': [1, +1], 'y-': [1, -1],
                    'z+': [2, +1], 'z-': [2, -1]}
-
 
 class ToolProbe:
     def __init__(self, config):
@@ -68,14 +64,12 @@ class ToolProbe:
         
         self.gcode.respond_info('1')
         downPos = probe_session.run_probe(gcmd, "z-")
-        self.gcode.respond_info('2')
         center_x, center_y = self.calibrate_xy(toolhead, downPos, probe_session, gcmd)
         self.gcode.respond_info('3')
 
         toolhead.manual_move([None, None, downPos[2] + self.lift_z], self.travel_speed)
         toolhead.manual_move([center_x, center_y, None], self.travel_speed)
-        center_z = probe_session.run_probe(gcmd, "z-", speed_ratio=0.5)[
-            2]
+        center_z = probe_session.run_probe(gcmd, "z-", speed_ratio=0.5)[2]
         # Now redo X and Y, since we have a more accurate center.
         center_x, center_y = self.calibrate_xy(toolhead, [center_x, center_y, center_z], probe_session, gcmd)
 
@@ -97,9 +91,7 @@ class ToolProbe:
         return [(left_x + right_x) / 2., (near_y + far_y) / 2.]
 
     def probe_xy(self, toolhead, top_pos, direction, probe_session, gcmd):
-        self.gcode.respond_info('5')
         offset = direction_types[direction]
-        self.gcode.respond_info('6')
         start_pos = list(top_pos)
         self.gcode.respond_info('7')
         start_pos[offset[0]] -= offset[1] * self.spread

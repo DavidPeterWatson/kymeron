@@ -245,6 +245,7 @@ class ProbeSessionHelper:
         # Calculate result
         result_position = self._calculate_results(positions, params['samples_result'], axis)
         self.results.append(result_position)
+        return result_position
 
     def _bouncing_probe(self, speed, direction='z-'):
         toolhead = self.printer.lookup_object('toolhead')
