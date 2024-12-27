@@ -97,13 +97,13 @@ class ToolProbe:
         toolhead.manual_move([None, None, top_pos[2] - self.lower_z], self.travel_speed)
         return probe_session.run_probe(gcmd, direction)[offset[0]]
 
-    # def get_status(self):
-    #     return {'last_result': self.last_result,
-    #             'last_probe_offset': self.last_probe_offset,
-    #             'calibration_probe_inactive': self.calibration_probe_inactive,
-    #             'last_x_result': self.last_result[0],
-    #             'last_y_result': self.last_result[1],
-    #             'last_z_result': self.last_result[2]}
+    def get_status(self, eventtime):
+        return {'last_result': self.last_result,
+                'last_probe_offset': self.last_probe_offset,
+                'calibration_probe_inactive': self.calibration_probe_inactive,
+                'last_x_result': self.last_result[0],
+                'last_y_result': self.last_result[1],
+                'last_z_result': self.last_result[2]}
 
     # cmd_QUERY_TOOL_PROBE_help = "Return the state of calibration probe"
     # def cmd_QUERY_TOOL_PROBE(self, gcmd):
