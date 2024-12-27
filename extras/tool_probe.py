@@ -21,9 +21,8 @@ class ToolProbe:
     def __init__(self, config):
         self.printer = config.get_printer()
         self.name = config.get_name()
-        self.gcode_move = self.printer.load_object(config, "gcode_move")
         self.probe_name = config.get('probe', 'probe')
-        self.probe = self.printer.load_object(config, self.probe_name)
+        self.probe = self.printer.lookup_object(self.probe_name)
 
         self.travel_speed = config.getfloat('travel_speed', 10.0, above=0.)
         self.x_pos = config.getfloat('x_pos')
