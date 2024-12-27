@@ -146,7 +146,7 @@ class ProbeSessionHelper:
         self.speed = config.getfloat('speed', 5.0, above=0.)
         self.lift_speed = config.getfloat('lift_speed', self.speed, above=0.)
         # Rocking support (for improved accuracy)
-        self.spread = config.getfloat('spread', 5.0, above=0.)
+        self.max_distance = config.getfloat('max_distance', 10.0, above=0.)
         # Multi-sample support (for improved accuracy)
         self.sample_count = config.getint('samples', 1, minval=1)
         self.sample_retract_dist = config.getfloat('sample_retract_dist', 2.,
@@ -189,7 +189,7 @@ class ProbeSessionHelper:
         if gcmd is None:
             gcmd = self.dummy_gcode_cmd
         probe_speed = gcmd.get_float("PROBE_SPEED", self.speed, above=0.)
-        spread = gcmd.get_float("SPREAD", self.spread, above=0.)
+        max_distance = gcmd.get_float("MAX_DISTANCE", self.max_distance, above=0.)
         lift_speed = gcmd.get_float("LIFT_SPEED", self.lift_speed, above=0.)
         samples = gcmd.get_int("SAMPLES", self.sample_count, minval=1)
         sample_retract_dist = gcmd.get_float("SAMPLE_RETRACT_DIST",
@@ -201,12 +201,50 @@ class ProbeSessionHelper:
         samples_result = gcmd.get("SAMPLES_RESULT", self.samples_result)
         return {'probe_speed': probe_speed,
                 'lift_speed': lift_speed,
-                'spread': spread,
+                'max_distance': max_distance,
                 'samples': samples,
                 'sample_retract_dist': sample_retract_dist,
                 'samples_tolerance': samples_tolerance,
                 'samples_tolerance_retries': samples_retries,
                 'samples_result': samples_result}
+
+    def run_probe(self, gcmd, direction='z-'):
+        if not self.multi_probe_pending:
+            self._probe_state_error()
+        params = self.get_probe_params(gcmd)
+        if direction not in direction_types:
+            raise self.printer.command_error("Wrong value for DIRECTION.")
+        logging.info("run_probe direction = " + str(direction))
+        (axis, sense) = direction_types[direction]
+        logging.info("run_probe axis = %d, sense = %d" % (axis, sense))
+        gcode = self.printer.lookup_object('gcode')
+        gcode.respond_info(f"Probing {axis} axis with {sense} sense")
+        toolhead = self.printer.lookup_object('toolhead')
+        start_position = self.printer.lookup_object('toolhead').get_position()
+        retries = 0
+        positions = []
+        sample_count = params['samples']
+        while len(positions) < sample_count:
+            # Probe position
+            pos = self._rocking_probe(params['probe_speed'], direction)
+            positions.append(pos)
+            # Check samples tolerance
+            axis_positions = [p[axis] for p in positions]
+            if max(axis_positions)-min(axis_positions) > params['samples_tolerance']:
+                if retries >= params['samples_tolerance_retries']:
+                    raise gcmd.error("Probe samples exceed samples_tolerance")
+                gcmd.respond_info("Probe samples exceed tolerance. Retrying...")
+                retries += 1
+                positions = []
+            # Retract
+            if len(positions) < sample_count:
+                liftpos = start_position
+                liftpos[axis] = pos[axis] - sense * params['sample_retract_dist']
+                toolhead.manual_move(liftpos, params['lift_speed'])
+
+        # Calculate result
+        result_position = self._calculate_results(positions, params['samples_result'], axis)
+        self.results.append(result_position)
 
     def _rocking_probe(self, speed, direction='z-'):
         toolhead = self.printer.lookup_object('toolhead')
@@ -255,57 +293,18 @@ class ProbeSessionHelper:
         toolhead = self.printer.lookup_object('toolhead')
         curtime = self.printer.get_reactor().monotonic()
         (axis, sense) = direction_types[direction]
-        max_distance = self.spread * 1.8
         pos = toolhead.get_position()
         kin_status = toolhead.get_kinematics().get_status(curtime)
         if 'axis_minimum' not in kin_status or 'axis_minimum' not in kin_status:
             raise self.gcode.error(
                 "Tools calibrate only works with cartesian kinematics")
         if sense > 0:
-            pos[axis] = min(pos[axis] + max_distance,
+            pos[axis] = min(pos[axis] + self.max_distance,
                             kin_status['axis_maximum'][axis])
         else:
-            pos[axis] = max(pos[axis] - max_distance,
+            pos[axis] = max(pos[axis] - self.max_distance,
                             kin_status['axis_minimum'][axis])
         return pos
-
-    def run_probe(self, gcmd, direction='z-'):
-        if not self.multi_probe_pending:
-            self._probe_state_error()
-        params = self.get_probe_params(gcmd)
-        if direction not in direction_types:
-            raise self.printer.command_error("Wrong value for DIRECTION.")
-        logging.info("run_probe direction = " + str(direction))
-        (axis, sense) = direction_types[direction]
-        logging.info("run_probe axis = %d, sense = %d" % (axis, sense))
-        gcode = self.printer.lookup_object('gcode')
-        gcode.respond_info(f"Probing {axis} axis with {sense} sense")
-        toolhead = self.printer.lookup_object('toolhead')
-        start_position = self.printer.lookup_object('toolhead').get_position()
-        retries = 0
-        positions = []
-        sample_count = params['samples']
-        while len(positions) < sample_count:
-            # Probe position
-            pos = self._rocking_probe(params['probe_speed'], direction)
-            positions.append(pos)
-            # Check samples tolerance
-            axis_positions = [p[axis] for p in positions]
-            if max(axis_positions)-min(axis_positions) > params['samples_tolerance']:
-                if retries >= params['samples_tolerance_retries']:
-                    raise gcmd.error("Probe samples exceed samples_tolerance")
-                gcmd.respond_info("Probe samples exceed tolerance. Retrying...")
-                retries += 1
-                positions = []
-            # Retract
-            if len(positions) < sample_count:
-                liftpos = start_position
-                liftpos[axis] = pos[axis] - sense * params['sample_retract_dist']
-                toolhead.manual_move(liftpos, params['lift_speed'])
-
-        # Calculate result
-        result_position = self._calculate_results(positions, params['samples_result'], axis)
-        self.results.append(result_position)
 
     def _calculate_results(self, positions, samples_result, axis):
         if samples_result == 'median':
@@ -404,14 +403,12 @@ class ProbePointsHelper:
         probe = self.printer.lookup_object('probe', None)
         method = gcmd.get('METHOD', 'automatic').lower()
         def_move_z = self.default_horizontal_move_z
-        self.horizontal_move_z = gcmd.get_float('HORIZONTAL_MOVE_Z',
-                                                def_move_z)
+        self.horizontal_move_z = gcmd.get_float('HORIZONTAL_MOVE_Z', def_move_z)
         # Perform automatic probing
         self.lift_speed = probe.get_probe_params(gcmd)['lift_speed']
         self.probe_offsets = probe.get_offsets()
         if self.horizontal_move_z < self.probe_offsets[2]:
-            raise gcmd.error("horizontal_move_z can't be less than"
-                             " probe's z_offset")
+            raise gcmd.error("horizontal_move_z can't be less than probe's z_offset")
         probe_session = probe.start_probe_session(gcmd)
         probe_num = 0
         while 1:
@@ -511,6 +508,7 @@ class ProbeEndstopWrapper:
 # Main external probe interface
 class MultiAxisRockingProbe:
     def __init__(self, config):
+        self.name = config.get_name()
         self.printer = config.get_printer()
         self.mcu_probes = [
             ProbeEndstopWrapper(config, 'x'),
@@ -521,6 +519,7 @@ class MultiAxisRockingProbe:
         self.probe_offsets = ProbeOffsetsHelper(config)
         self.probe_session = ProbeSessionHelper(config, self.mcu_probes)
         self.printer.add_object('probe', self)
+        self.printer.add_object(self.name, self)
 
     def get_probe_params(self, gcmd=None):
         return self.probe_session.get_probe_params(gcmd)
