@@ -12,11 +12,11 @@ class ToolProbe:
         # self.probe_name = config.get('probe', 'probe')
         # # self.probe = self.printer.lookup_object(self.probe_name)
 
-        # self.travel_speed = config.getfloat('travel_speed', 10.0, above=0.)
         self.x_pos = config.getfloat('x_pos')
         self.y_pos = config.getfloat('y_pos')
         self.z_pos = config.getfloat('z_pos')
 
+        self.travel_speed = config.getfloat('travel_speed', 10.0, above=0.)
         self.spread = config.getfloat('spread', 5.0)
         self.lower_z = config.getfloat('lower_z', 0.5)
         self.lift_z = config.getfloat('lift_z', 1.0)
