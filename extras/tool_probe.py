@@ -73,7 +73,7 @@ class ToolProbe:
             self.gcode.respond_info('4')
             toolhead.manual_move([center_x, center_y, None], self.travel_speed)
             self.gcode.respond_info('5')
-            center_z = probe_session.run_probe(gcmd, "z-", speed_ratio=0.5)[2]
+            center_z = probe_session.run_probe(gcmd, "z-")[2]
             self.gcode.respond_info('6')
             # Now redo X and Y, since we have a more accurate center.
             center_x, center_y = self.calibrate_xy(toolhead, [center_x, center_y, center_z], probe_session, gcmd)
@@ -83,8 +83,11 @@ class ToolProbe:
             position[0] = center_x
             position[1] = center_y
             position[2] = center_z + self.final_lift_z
+            self.gcode.respond_info('8')
             toolhead.manual_move([None, None, position[2]], self.travel_speed)
+            self.gcode.respond_info('9')
             toolhead.manual_move([position[0], position[1], None], self.travel_speed)
+            self.gcode.respond_info('10')
             toolhead.set_position(position)
             return [center_x, center_y, center_z]
         except self.printer.command_error as e:
