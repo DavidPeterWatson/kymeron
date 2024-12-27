@@ -28,9 +28,9 @@ class ToolProbe:
         self.gcode.register_command('LOCATE_TOOL_PROBE',
                                     self.cmd_LOCATE_TOOL_PROBE,
                                     desc=self.cmd_LOCATE_TOOL_PROBE_help)
-        # self.gcode.register_command('CALIBRATE_TOOL_OFFSET',
-        #                             self.cmd_CALIBRATE_TOOL_OFFSET,
-        #                             desc=self.cmd_CALIBRATE_TOOL_OFFSET_help)
+        self.gcode.register_command('CALIBRATE_TOOL_OFFSET',
+                                    self.cmd_CALIBRATE_TOOL_OFFSET,
+                                    desc=self.cmd_CALIBRATE_TOOL_OFFSET_help)
         # self.gcode.register_command('QUERY_TOOL_PROBE',
         #                             self.cmd_QUERY_TOOL_PROBE,
         #                             desc=self.cmd_QUERY_TOOL_PROBE_help)
@@ -46,17 +46,17 @@ class ToolProbe:
                                 % (self.last_result[0], self.last_result[1],
                                    self.last_result[2]))
 
-    # cmd_CALIBRATE_TOOL_OFFSET_help = "Calibrate current tool offset relative to tool probe"
-    # def cmd_CALIBRATE_TOOL_OFFSET(self, gcmd):
-    #     if not self.sensor_location:
-    #         raise gcmd.error(
-    #             "No recorded sensor location, please run TOOL_LOCATE_SENSOR first")
-    #     location = self.locate_sensor(gcmd)
-    #     self.last_result = [location[i] - self.sensor_location[i] for i in
-    #                         range(3)]
-    #     self.gcode.respond_info("Tool offset is %.6f,%.6f,%.6f"
-    #                             % (self.last_result[0], self.last_result[1],
-    #                                self.last_result[2]))
+    cmd_CALIBRATE_TOOL_OFFSET_help = "Calibrate current tool offset relative to tool probe"
+    def cmd_CALIBRATE_TOOL_OFFSET(self, gcmd):
+        if not self.sensor_location:
+            raise gcmd.error(
+                "No recorded sensor location, please run TOOL_LOCATE_SENSOR first")
+        location = self.locate_sensor(gcmd)
+        self.last_result = [location[i] - self.sensor_location[i] for i in
+                            range(3)]
+        self.gcode.respond_info("Tool offset is %.6f,%.6f,%.6f"
+                                % (self.last_result[0], self.last_result[1],
+                                   self.last_result[2]))
 
     def locate_sensor(self, probe_session, gcmd):
         toolhead = self.printer.lookup_object('toolhead')
@@ -81,7 +81,6 @@ class ToolProbe:
         toolhead.set_position(position)
         self.gcode.respond_info('11')
         return [center_x, center_y, center_z]
-
 
     def calibrate_xy(self, toolhead, top_pos, probe_session, gcmd):
         left_x = self.probe_xy(toolhead, top_pos, 'x+', probe_session, gcmd)
