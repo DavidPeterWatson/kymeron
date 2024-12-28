@@ -246,7 +246,7 @@ class ProbeSessionHelper:
         while bounces < bounce_count:
             pos = self._probe(bouncing_speed, direction)
             # https://www.klipper3d.org/Multi_MCU_Homing.html#:~:text=The%20overshoot%20occurs%20due%20to,controllers%20moving%20the%20stepper%20motors.
-            bouncing_retract_dist = bouncing_speed * 0.3
+            bouncing_retract_dist = bouncing_speed * 0.2
             bouncing_speed = bouncing_speed * self.bounce_ratio
             liftpos = probe_start
             liftpos[axis] = pos[axis] - sense * bouncing_retract_dist
