@@ -123,7 +123,8 @@ class ProbeSessionHelper:
 
         self.speed = config.getfloat('speed', 5.0, above=0.)
         self.lift_speed = config.getfloat('lift_speed', self.speed, above=0.)
-        self.bounce_ratio = config.getfloat('bounce_ratio', 0.1, above=0.)
+        self.bounce_speed_ratio = config.getfloat('bounce_speed_ratio', 0.1, above=0.)
+        self.bounce_distance_ratio = config.getfloat('bounce_distance_ratio', 0.3, above=0.)
         self.bounce_count = config.getint('bounce_count', 3, minval=1)
         self.max_distance = config.getfloat('max_distance', 10.0, above=0.)
         self.sample_count = config.getint('samples', 1, minval=1)
@@ -172,9 +173,10 @@ class ProbeSessionHelper:
         if gcmd is None:
             gcmd = self.dummy_gcode_cmd
         probe_speed = gcmd.get_float("PROBE_SPEED", self.speed, above=0.)
-        max_distance = gcmd.get_float("MAX_DISTANCE", self.max_distance, above=0.)
+        max_distance = gcmd.get_float("MAX_DISTANCE", self.max_distance, above=1.0)
         lift_speed = gcmd.get_float("LIFT_SPEED", self.lift_speed, above=0.)
-        bounce_ratio = gcmd.get_float("BOUNCE_RATIO", self.bounce_ratio, above=0.)
+        bounce_speed_ratio = gcmd.get_float("BOUNCE_SPEED_RATIO", self.bounce_speed_ratio, above=0.1)
+        bounce_distance_ratio = gcmd.get_float("BOUNCE_DISTANCE_RATIO", self.bounce_distance_ratio, above=0.1)
         bounce_count = gcmd.get_int("BOUNCE_COUNT", self.bounce_count, minval=1)
         samples = gcmd.get_int("SAMPLES", self.sample_count, minval=1)
         sample_retract_dist = gcmd.get_float("SAMPLE_RETRACT_DIST",
@@ -186,7 +188,8 @@ class ProbeSessionHelper:
         samples_result = gcmd.get("SAMPLES_RESULT", self.samples_result)
         return {'probe_speed': probe_speed,
                 'lift_speed': lift_speed,
-                'bounce_ratio': bounce_ratio,
+                'bounce_speed_ratio': bounce_speed_ratio,
+                'bounce_distance_ratio': bounce_distance_ratio,
                 'bounce_count': bounce_count,
                 'max_distance': max_distance,
                 'samples': samples,
@@ -245,9 +248,8 @@ class ProbeSessionHelper:
         bouncing_lift_speed = speed * 2.0
         while bounces < bounce_count:
             pos = self._probe(bouncing_speed, direction)
-            # https://www.klipper3d.org/Multi_MCU_Homing.html#:~:text=The%20overshoot%20occurs%20due%20to,controllers%20moving%20the%20stepper%20motors.
-            bouncing_retract_dist = bouncing_speed * 0.2
-            bouncing_speed = bouncing_speed * self.bounce_ratio
+            bouncing_retract_dist = bouncing_speed * self.bounce_distance_ratio
+            bouncing_speed = bouncing_speed * self.bounce_speed_ratio
             liftpos = probe_start
             liftpos[axis] = pos[axis] - sense * bouncing_retract_dist
             toolhead.manual_move(liftpos, bouncing_lift_speed)
