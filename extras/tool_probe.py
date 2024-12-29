@@ -54,6 +54,7 @@ class ToolProbe:
         probe = self.printer.lookup_object(self.probe_name)
         probe_session = probe.start_probe_session(gcmd)
         location = self.locate_sensor(probe_session, gcmd)
+        probe_session.end_probe_session()
         self.last_result = [location[i] - self.sensor_location[i] for i in
                             range(3)]
         self.gcode.respond_info("Tool offset is %.6f,%.6f,%.6f"

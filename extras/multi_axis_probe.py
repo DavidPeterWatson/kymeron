@@ -68,7 +68,7 @@ class ProbeCommandHelper:
         gcode = self.printer.lookup_object('gcode')
         fo_gcmd = gcode.create_gcode_command("", "", fo_params)
         # Probe bed sample_count times
-        probe_session = self.probe.start_probe_session(fo_gcmd, 'z-')
+        probe_session = self.probe.start_probe_session(fo_gcmd, direction)
         probe_num = 0
         while probe_num < sample_count:
             # Probe position
@@ -410,13 +410,13 @@ class ProbePointsHelper:
             self._move_next(probe_num)
             probe_session.run_probe(gcmd)
             probe_num += 1
-        probe_session.end_probe_session()
+        probe_session.end_probe_session('z-')
 
 def run_single_probe(probe, gcmd, direction='z-'):
     probe_session = probe.start_probe_session(gcmd, direction)
     probe_session.run_probe(gcmd, direction)
     pos = probe_session.pull_probed_results()[0]
-    probe_session.end_probe_session()
+    probe_session.end_probe_session(direction)
     return pos
 
 
