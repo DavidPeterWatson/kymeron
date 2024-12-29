@@ -68,7 +68,7 @@ class ProbeCommandHelper:
         gcode = self.printer.lookup_object('gcode')
         fo_gcmd = gcode.create_gcode_command("", "", fo_params)
         # Probe bed sample_count times
-        probe_session = self.probe.start_probe_session(fo_gcmd, direction)
+        probe_session = self.probe.start_probe_session(fo_gcmd, 'z-')
         probe_num = 0
         while probe_num < sample_count:
             # Probe position
@@ -396,7 +396,7 @@ class ProbePointsHelper:
         self.probe_offsets = probe.get_offsets()
         if self.horizontal_move_z < self.probe_offsets[2]:
             raise gcmd.error("horizontal_move_z can't be less than probe's z_offset")
-        probe_session = probe.start_probe_session(gcmd)
+        probe_session = probe.start_probe_session(gcmd, 'z-')
         probe_num = 0
         while 1:
             self._raise_tool(not probe_num)
@@ -413,7 +413,7 @@ class ProbePointsHelper:
         probe_session.end_probe_session()
 
 def run_single_probe(probe, gcmd, direction='z-'):
-    probe_session = probe.start_probe_session(gcmd)
+    probe_session = probe.start_probe_session(gcmd, direction)
     probe_session.run_probe(gcmd, direction)
     pos = probe_session.pull_probed_results()[0]
     probe_session.end_probe_session()
