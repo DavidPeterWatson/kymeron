@@ -33,6 +33,7 @@ class ToolProbe:
         # self.gcode.register_command('QUERY_TOOL_PROBE',
         #                             self.cmd_QUERY_TOOL_PROBE,
         #                             desc=self.cmd_QUERY_TOOL_PROBE_help)
+        self.printer.add_object(self.name, self)
 
     cmd_LOCATE_TOOL_PROBE_help = ("Locate the tool probe with bed probe")
     def cmd_LOCATE_TOOL_PROBE(self, gcmd):
