@@ -27,6 +27,8 @@ The gantry only moves in the x and y directions, while the bed moves in the z di
 Nema 23 motors for higher forces
 BTT Octopus pro with TMC5160 Pro so that Voltage can be increased to 48V for higher speeds and higher amps.
 
+
+
 4 x z-axis linear actuators to move the bed vertically.
 Vertical linear actuators also form the vertical frame.
 Vertical linear actuators are C-Beam extrusions with stepper motors mounted at the top.
