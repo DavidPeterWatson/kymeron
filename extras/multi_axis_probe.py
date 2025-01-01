@@ -263,8 +263,9 @@ class ProbeSessionHelper:
         self.check_homed()
         (axis, sense) = direction_types[direction]
         pos = self._get_target_position(direction)
+        probe_speed = speed if 'z' in direction else speed * 0.25
         try:
-            epos = self.mcu_probes[axis].probing_move(pos, speed)
+            epos = self.mcu_probes[axis].probing_move(pos, probe_speed)
         except self.printer.command_error as e:
             reason = str(e)
             if "Timeout during endstop homing" in reason:
