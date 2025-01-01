@@ -211,12 +211,13 @@ class ProbeSessionHelper:
         gcode.respond_info(f"Probing {axis} axis with {sense} sense")
         toolhead = self.printer.lookup_object('toolhead')
         start_position = self.printer.lookup_object('toolhead').get_position()
+        probe_speed = params['probe_speed'] * 0.5 if direction.startswith('z') else params['probe_speed']
         retries = 0
         positions = []
         sample_count = params['samples']
         while len(positions) < sample_count:
             # Probe position
-            pos = self._bouncing_probe(params['probe_speed'], direction)
+            pos = self._bouncing_probe(probe_speed, direction)
             positions.append(pos)
             # Check samples tolerance
             axis_positions = [p[axis] for p in positions]
@@ -263,9 +264,8 @@ class ProbeSessionHelper:
         self.check_homed()
         (axis, sense) = direction_types[direction]
         pos = self._get_target_position(direction)
-        probe_speed = speed * 0.5 if direction.startswith('z') else speed
         try:
-            epos = self.mcu_probes[axis].probing_move(pos, probe_speed)
+            epos = self.mcu_probes[axis].probing_move(pos, speed)
         except self.printer.command_error as e:
             reason = str(e)
             if "Timeout during endstop homing" in reason:
