@@ -263,8 +263,7 @@ class ProbeSessionHelper:
         self.check_homed()
         (axis, sense) = direction_types[direction]
         pos = self._get_target_position(direction)
-        probe_speed = speed if direction.startswith('z') else speed * 0.4
-        probe_speed = speed * 0.4
+        probe_speed = speed if direction.startswith('z') else speed * 0.25
         try:
             epos = self.mcu_probes[axis].probing_move(pos, probe_speed)
         except self.printer.command_error as e:
