@@ -246,7 +246,7 @@ class ProbeSessionHelper:
         bounce_count = self.bounce_count
         bounces = 0
         bouncing_speed = speed
-        bouncing_lift_speed = speed * 1.2
+        bouncing_lift_speed = speed
         while bounces < bounce_count:
             pos = self._probe(bouncing_speed, direction)
             bouncing_retract_dist = bouncing_speed * self.bounce_distance_ratio
