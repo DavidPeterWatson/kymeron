@@ -1,6 +1,3 @@
-LONG_PRESS_DURATION = 0.800
-TIMER_DELAY = .200
-
 class EmergencyStop:
     def __init__(self, config):
         self.printer = config.get_printer()
