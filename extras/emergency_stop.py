@@ -3,6 +3,7 @@ import logging
 
 class EmergencyStop:
     def __init__(self, config):
+        gcode = self.printer.lookup_object('gcode')
         try:
             self.printer = config.get_printer()
             self.name = config.get_name().split(' ')[-1]
@@ -12,10 +13,12 @@ class EmergencyStop:
             self.printer.add_object('emergency_stop_' + self.name, self)
         except Exception as e:
             reason = str(e)
-            logging.exception(f"Error initialising emergency button. {reason}")
+            gcode.respond_info(f"Error initialising emergency button. {reason}")
+            raise e
 
 
     def register_button(self, config, name, callback):
+        gcode = self.printer.lookup_object('gcode')
         try:
             pin = config.get(name, None)
             if pin is None:
@@ -29,10 +32,12 @@ class EmergencyStop:
             buttons.register_adc_button(pin, amin, amax, pullup, callback)
         except Exception as e:
             reason = str(e)
-            logging.exception(f"Error registering emergency button. {reason}")
+            gcode.respond_info(f"Error registering emergency button. {reason}")
+            raise e
 
     def kill_callback(self, eventtime):
-        logging.info("emergency stop activated!")
+        gcode = self.printer.lookup_object('gcode')
+        gcode.respond_info("emergency stop activated!")
         # self.printer.invoke_shutdown("Shutdown due to emergency stop!")
         
 
