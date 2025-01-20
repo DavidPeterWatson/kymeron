@@ -16,12 +16,12 @@ class EmergencyStop:
                                         self.button_callback)
 
         self.gcode = self.printer.lookup_object('gcode')
-        self.gcode.register_mux_command("QUERY_EMERGENCY", "BUTTON", self.name,
-                                        self.cmd_QUERY_BUTTON,
-                                        desc=self.cmd_QUERY_BUTTON_help)
+        self.gcode.register_mux_command("QUERY_EMERGENCY", "EMERGENCY_STOP", self.name,
+                                        self.cmd_QUERY_EMERGENCY,
+                                        desc=self.cmd_QUERY_EMERGENCY_help)
 
-    cmd_QUERY_BUTTON_help = "Report on the state of a button"
-    def cmd_QUERY_BUTTON(self, gcmd):
+    cmd_QUERY_EMERGENCY_help = "Report on the state of an emergency stop"
+    def cmd_QUERY_EMERGENCY(self, gcmd):
         gcmd.respond_info(self.name + ": " + self.get_status()['state'])
 
     def button_callback(self, eventtime, state):
