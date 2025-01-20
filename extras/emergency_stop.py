@@ -12,7 +12,7 @@ class EmergencyStop:
         except Exception as e:
             reason = str(e)
             gcode.respond_info(f"Error initialising emergency button. {reason}")
-            raise e
+            # raise e
 
 
     def register_button(self, config, name, callback):
@@ -31,13 +31,17 @@ class EmergencyStop:
         except Exception as e:
             reason = str(e)
             gcode.respond_info(f"Error registering emergency button. {reason}")
-            # raise e
+            raise e
 
 
     def kill_callback(self, eventtime):
-        gcode = self.printer.lookup_object('gcode')
-        gcode.respond_info("emergency stop activated!")
-        # self.printer.invoke_shutdown("Shutdown due to emergency stop!")
+        try:
+            gcode = self.printer.lookup_object('gcode')
+            gcode.respond_info("emergency stop activated!")
+            # self.printer.invoke_shutdown("Shutdown due to emergency stop!")
+        except Exception as e:
+            reason = str(e)
+            gcode.respond_info(f"Error calling kill. {reason}")
         
 
 def load_config_prefix(config):
