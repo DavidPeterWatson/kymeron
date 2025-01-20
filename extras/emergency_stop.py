@@ -4,6 +4,7 @@ class EmergencyStop:
         gcode = self.printer.lookup_object('gcode')
         try:
             self.name = config.get_name().split(' ')[-1]
+            self.buttons = self.printer.load_object(config, "buttons")
 
             # Register kill button
             self.register_button(config, 'kill_pin', self.kill_callback)
@@ -20,17 +21,18 @@ class EmergencyStop:
             pin = config.get(name, None)
             if pin is None:
                 return
-            buttons = self.printer.lookup_object("buttons")
+            # buttons = self.printer.lookup_object("buttons")
             if config.get('analog_range', None) is None:
-                buttons.register_buttons([pin], callback)
+                self.buttons.register_buttons([pin], callback)
                 return
             amin, amax = config.getfloatlist('analog_range', count=2)
             pullup = config.getfloat('analog_pullup_resistor', 4700., above=0.)
-            buttons.register_adc_button(pin, amin, amax, pullup, callback)
+            self.buttons.register_adc_button(pin, amin, amax, pullup, callback)
         except Exception as e:
             reason = str(e)
             gcode.respond_info(f"Error registering emergency button. {reason}")
             raise e
+
 
     def kill_callback(self, eventtime):
         gcode = self.printer.lookup_object('gcode')
