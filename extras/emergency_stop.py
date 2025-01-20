@@ -30,6 +30,7 @@ class EmergencyStop:
             gcode = self.printer.lookup_object('gcode')
             if state:
                 gcode.respond_info("emergency stop activated!")
+                self.printer.invoke_shutdown("Shutdown due to emergency stop!")
             else:
                 gcode.respond_info("emergency stop deactivated!")
         except:
