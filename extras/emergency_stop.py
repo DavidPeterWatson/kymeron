@@ -5,6 +5,7 @@ class EmergencyStop:
         self.printer = config.get_printer()
         self.name = config.get_name().split(' ')[-1]
         self.pin = config.get('pin')
+        self.enabled = True
         self.last_state = 0
         buttons = self.printer.load_object(config, "buttons")
         if config.get('analog_range', None) is None:
@@ -17,24 +18,39 @@ class EmergencyStop:
 
         self.gcode = self.printer.lookup_object('gcode')
         self.gcode.register_mux_command("QUERY_EMERGENCY", "EMERGENCY_STOP", self.name,
-                                        self.cmd_QUERY_EMERGENCY,
-                                        desc=self.cmd_QUERY_EMERGENCY_help)
+            self.cmd_QUERY_EMERGENCY,
+            desc=self.cmd_QUERY_EMERGENCY_help)
+        self.gcode.register_mux_command("ENABLE_EMERGENCY", "EMERGENCY_STOP", self.name,
+            self.cmd_ENABLE_EMERGENCY_STOP,
+            desc=self.cmd_ENABLE_EMERGENCY_STOP_help)
+        self.gcode.register_mux_command("DISABLE_EMERGENCY_STOP", "EMERGENCY_STOP", self.name,
+            self.cmd_DISABLE_EMERGENCY_STOP,
+            desc=self.cmd_DISABLE_EMERGENCY_STOP_help)
 
     cmd_QUERY_EMERGENCY_help = "Report on the state of an emergency stop"
     def cmd_QUERY_EMERGENCY(self, gcmd):
         gcmd.respond_info(self.name + ": " + self.get_status()['state'])
 
+    cmd_ENABLE_EMERGENCY_STOP_help = "Enable the emergency stop"
+    def cmd_ENABLE_EMERGENCY_STOP(self, gcmd):
+        self.enabled = True
+        gcmd.respond_info("emergency stop enabled!")
+
+    cmd_DISABLE_EMERGENCY_STOP_help = "Disable the emergency stop"
+    def cmd_DISABLE_EMERGENCY_STOP(self, gcmd):
+        self.enabled = False
+        gcmd.respond_info("emergency stop disabled!")
+
     def button_callback(self, eventtime, state):
         self.last_state = state
-        try:
-            gcode = self.printer.lookup_object('gcode')
-            if state:
-                gcode.respond_info("emergency stop activated!")
+        gcode = self.printer.lookup_object('gcode')
+        if state:
+            gcode.respond_info("emergency stop activated!")
+            if self.enabled:
                 self.printer.invoke_shutdown("Shutdown due to emergency stop!")
-            else:
-                gcode.respond_info("emergency stop deactivated!")
-        except:
-            logging.exception("Script running error")
+        else:
+            gcode.respond_info("emergency stop deactivated!")
+
 
     def get_status(self, eventtime=None):
         if self.last_state:
