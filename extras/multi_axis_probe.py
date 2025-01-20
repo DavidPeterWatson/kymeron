@@ -61,7 +61,7 @@ class ProbeCommandHelper:
                           " speed=%.1f lift_speed=%.1f)\n"
                           % (pos[0], pos[1], pos[2],
                              sample_count, params['sample_retract_dist'],
-                             params['probe_speed'], params['lift_speed']))
+                             params['speed'], params['lift_speed']))
         # Create dummy gcmd with SAMPLES=1
         fo_params = dict(gcmd.get_command_parameters())
         fo_params['SAMPLES'] = '1'
@@ -175,15 +175,17 @@ class ProbeSessionHelper:
     def __init__(self, config, mcu_probes):
         self.printer = config.get_printer()
         self.mcu_probes = mcu_probes
-        gcode = self.printer.lookup_object('gcode')
-        self.dummy_gcode_cmd = gcode.create_gcode_command("", "", {})
+        self.gcode = self.printer.lookup_object('gcode')
+        self.dummy_gcode_cmd = self.gcode.create_gcode_command("", "", {})
         self.homing_helper = HomingViaProbeHelper(config, self.mcu_probes[2])
 
         self.speed = config.getfloat('speed', 5.0, above=0.)
+        self.acceleration = config.getfloat('acceleration', 0., minval=0.)
         self.lift_speed = config.getfloat('lift_speed', self.speed, above=0.)
         self.bounce_speed_ratio = config.getfloat('bounce_speed_ratio', 0.1, above=0.)
         self.bounce_distance_ratio = config.getfloat('bounce_distance_ratio', 0.3, above=0.)
         self.bounce_count = config.getint('bounce_count', 3, minval=1)
+        self.pause_time = config.getfloat('pause_time', 0.3, minval=0.0)
         self.max_distance = config.getfloat('max_distance', 10.0, above=0.)
         self.sample_count = config.getint('samples', 1, minval=1)
         self.sample_retract_dist = config.getfloat('sample_retract_dist', 2.,
@@ -216,10 +218,20 @@ class ProbeSessionHelper:
         (axis, sense) = direction_types[direction]
         self.mcu_probes[axis].multi_probe_begin()
         self.multi_probe_pending = True
+        self.set_acceleration()
         self.results = []
         return self
+    
+    def set_acceleration(self):
+        if self.acceleration:
+            toolhead = self.printer.lookup_object('toolhead')
+            system_time = self.printer.get_reactor().monotonic()
+            toolhead_info = toolhead.get_status(system_time)
+            self.old_max_acceleration = toolhead_info['max_accel']
+            self.gcode.run_script_from_command("M204 S%.3f" % (self.acceleration,))
 
     def end_probe_session(self, direction='z-'):
+        self.restore_acceleration()
         if not self.multi_probe_pending:
             self._probe_state_error()
         (axis, sense) = direction_types[direction]
@@ -227,15 +239,21 @@ class ProbeSessionHelper:
         self.multi_probe_pending = False
         self.mcu_probes[axis].multi_probe_end()
 
+    def restore_acceleration(self):
+        if self.acceleration and self.old_max_acceleration:
+            self.gcode.run_script_from_command("M204 S%.3f" % (self.old_max_acceleration,))
+
     def get_probe_params(self, gcmd=None):
         if gcmd is None:
             gcmd = self.dummy_gcode_cmd
-        probe_speed = gcmd.get_float("PROBE_SPEED", self.speed, above=0.)
+        speed = gcmd.get_float("PROBE_SPEED", self.speed, above=0.)
+        acceleration = gcmd.get_float("PROBE_ACCELERATION", self.acceleration, minval=0.0)
         max_distance = gcmd.get_float("MAX_DISTANCE", self.max_distance, above=1.0)
         lift_speed = gcmd.get_float("LIFT_SPEED", self.lift_speed, above=0.)
         bounce_speed_ratio = gcmd.get_float("BOUNCE_SPEED_RATIO", self.bounce_speed_ratio, above=0.1)
         bounce_distance_ratio = gcmd.get_float("BOUNCE_DISTANCE_RATIO", self.bounce_distance_ratio, above=0.1)
         bounce_count = gcmd.get_int("BOUNCE_COUNT", self.bounce_count, minval=1)
+        pause_time = gcmd.get_int("PAUSE_TIME", self.pause_time, minval=0.0)
         samples = gcmd.get_int("SAMPLES", self.sample_count, minval=1)
         sample_retract_dist = gcmd.get_float("SAMPLE_RETRACT_DIST",
                                              self.sample_retract_dist, above=0.)
@@ -244,11 +262,13 @@ class ProbeSessionHelper:
         samples_retries = gcmd.get_int("SAMPLES_TOLERANCE_RETRIES",
                                        self.samples_retries, minval=0)
         samples_result = gcmd.get("SAMPLES_RESULT", self.samples_result)
-        return {'probe_speed': probe_speed,
+        return {'speed': speed,
                 'lift_speed': lift_speed,
                 'bounce_speed_ratio': bounce_speed_ratio,
                 'bounce_distance_ratio': bounce_distance_ratio,
                 'bounce_count': bounce_count,
+                'pause_time': pause_time,
+                'acceleration': acceleration,
                 'max_distance': max_distance,
                 'samples': samples,
                 'sample_retract_dist': sample_retract_dist,
@@ -265,17 +285,16 @@ class ProbeSessionHelper:
         logging.info("run_probe direction = " + str(direction))
         (axis, sense) = direction_types[direction]
         logging.info("run_probe axis = %d, sense = %d" % (axis, sense))
-        gcode = self.printer.lookup_object('gcode')
-        gcode.respond_info(f"Probing {axis} axis with {sense} sense")
+        self.gcode.respond_info(f"Probing {axis} axis with {sense} sense")
         toolhead = self.printer.lookup_object('toolhead')
         start_position = self.printer.lookup_object('toolhead').get_position()
-        probe_speed = params['probe_speed'] * 0.4 if direction.startswith('z') else params['probe_speed']
+        speed = params['speed'] * 0.4 if direction.startswith('z') else params['speed']
         retries = 0
         positions = []
         sample_count = params['samples']
         while len(positions) < sample_count:
             # Probe position
-            pos = self._bouncing_probe(probe_speed, direction)
+            pos = self._bouncing_probe(speed, direction)
             positions.append(pos)
             # Check samples tolerance
             axis_positions = [p[axis] for p in positions]
@@ -298,7 +317,6 @@ class ProbeSessionHelper:
 
     def _bouncing_probe(self, speed, direction='z-'):
         toolhead = self.printer.lookup_object('toolhead')
-        gcode = self.printer.lookup_object('gcode')
         probe_start = toolhead.get_position()
         (axis, sense) = direction_types[direction]
         bounce_count = self.bounce_count
@@ -306,6 +324,8 @@ class ProbeSessionHelper:
         bouncing_speed = speed
         bouncing_lift_speed = speed
         while bounces < bounce_count:
+            if self.pause_time:
+                toolhead.dwell(self.pause_time)
             pos = self._probe(bouncing_speed, direction)
             bouncing_retract_dist = bouncing_speed * self.bounce_distance_ratio
             bouncing_speed = bouncing_speed * self.bounce_speed_ratio
@@ -315,7 +335,7 @@ class ProbeSessionHelper:
             bounces += 1
         # Allow axis_twist_compensation to update results
         self.printer.send_event("probe:update_results", pos)
-        gcode.respond_info(f"Probe made contact in {direction} direction at {pos[0]},{pos[1]},{pos[2]}")
+        self.gcode.respond_info(f"Probe made contact in {direction} direction at {pos[0]},{pos[1]},{pos[2]}")
         return pos
 
     def _probe(self, speed, direction='z-'):
@@ -338,7 +358,7 @@ class ProbeSessionHelper:
                 'y' not in toolhead.get_status(curtime)['homed_axes'] or \
                 'z' not in toolhead.get_status(curtime)['homed_axes']:
             raise self.printer.command_error("Must home before probe")
-        
+
     def _get_target_position(self, direction):
         toolhead = self.printer.lookup_object('toolhead')
         curtime = self.printer.get_reactor().monotonic()
