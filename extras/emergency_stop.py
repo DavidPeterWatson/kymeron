@@ -1,11 +1,8 @@
-import logging
-
-
 class EmergencyStop:
     def __init__(self, config):
+        self.printer = config.get_printer()
         gcode = self.printer.lookup_object('gcode')
         try:
-            self.printer = config.get_printer()
             self.name = config.get_name().split(' ')[-1]
 
             # Register kill button
