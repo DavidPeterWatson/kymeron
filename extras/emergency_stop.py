@@ -31,7 +31,7 @@ class EmergencyStop:
         except Exception as e:
             reason = str(e)
             gcode.respond_info(f"Error registering emergency button. {reason}")
-            raise e
+            # raise e
 
 
     def kill_callback(self, eventtime):
