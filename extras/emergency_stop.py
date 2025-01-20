@@ -1,3 +1,6 @@
+import logging
+
+
 class EmergencyStop:
     def __init__(self, config):
         self.printer = config.get_printer()
@@ -21,7 +24,8 @@ class EmergencyStop:
         buttons.register_adc_button(pin, amin, amax, pullup, callback)
 
     def kill_callback(self, eventtime):
-        self.printer.invoke_shutdown("Shutdown due to emergency stop!")
+        logging.info("emergency stop activated!")
+        # self.printer.invoke_shutdown("Shutdown due to emergency stop!")
         
 
 def load_config_prefix(config):
