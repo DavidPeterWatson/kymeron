@@ -322,7 +322,7 @@ class ProbeSessionHelper:
         bounce_count = self.bounce_count
         bounces = 0
         bouncing_speed = speed
-        bouncing_lift_speed = speed
+        bouncing_lift_speed = speed * 2
         while bounces < bounce_count:
             if self.pause_time:
                 toolhead.dwell(self.pause_time)
