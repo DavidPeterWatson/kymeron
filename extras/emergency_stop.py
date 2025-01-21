@@ -20,7 +20,7 @@ class EmergencyStop:
         self.gcode.register_mux_command("QUERY_EMERGENCY", "EMERGENCY_STOP", self.name,
             self.cmd_QUERY_EMERGENCY,
             desc=self.cmd_QUERY_EMERGENCY_help)
-        self.gcode.register_mux_command("ENABLE_EMERGENCY", "EMERGENCY_STOP", self.name,
+        self.gcode.register_mux_command("ENABLE_EMERGENCY_STOP", "EMERGENCY_STOP", self.name,
             self.cmd_ENABLE_EMERGENCY_STOP,
             desc=self.cmd_ENABLE_EMERGENCY_STOP_help)
         self.gcode.register_mux_command("DISABLE_EMERGENCY_STOP", "EMERGENCY_STOP", self.name,
