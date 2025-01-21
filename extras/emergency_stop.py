@@ -5,7 +5,7 @@ class EmergencyStop:
         self.printer = config.get_printer()
         self.name = config.get_name().split(' ')[-1]
         self.pin = config.get('pin')
-        self.enabled = config.get('enabled', True)
+        self.enabled = config.getboolean('enabled', True)
         self.last_state = 0
         buttons = self.printer.load_object(config, "buttons")
         if config.get('analog_range', None) is None:
