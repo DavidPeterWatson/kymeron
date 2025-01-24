@@ -29,7 +29,8 @@ class EmergencyStop:
 
     cmd_QUERY_EMERGENCY_help = 'Report on the state of an emergency stop'
     def cmd_QUERY_EMERGENCY(self, gcmd):
-        gcmd.respond_info(f'{self.name}: {self.get_status()['state']}')
+        state = self.get_status()['state']
+        gcmd.respond_info(f'{self.name}: {state}')
 
     cmd_ENABLE_EMERGENCY_STOP_help = 'Enable the emergency stop'
     def cmd_ENABLE_EMERGENCY_STOP(self, gcmd):
