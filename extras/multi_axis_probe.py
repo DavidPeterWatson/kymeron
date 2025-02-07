@@ -2,6 +2,7 @@ import logging
 import pins
 
 direction_types = {'x+': [0, +1], 'x-': [0, -1], 'y+': [1, +1], 'y-': [1, -1], 'z+': [2, +1], 'z-': [2, -1]}
+axis_names = ['x', 'y', 'z']
 
 HINT_TIMEOUT = """
 If the probe did not move far enough to trigger, then
@@ -285,7 +286,8 @@ class ProbeSessionHelper:
         logging.info("run_probe direction = " + str(direction))
         (axis, sense) = direction_types[direction]
         logging.info("run_probe axis = %d, sense = %d" % (axis, sense))
-        self.gcode.respond_info(f"Probing {axis} axis with {sense} sense")
+        axis_name = axis_names[axis]
+        self.gcode.respond_info(f"Probing {axis_name} axis in {sense} direction")
         toolhead = self.printer.lookup_object('toolhead')
         start_position = self.printer.lookup_object('toolhead').get_position()
         speed = params['speed'] * 0.4 if direction.startswith('z') else params['speed']
