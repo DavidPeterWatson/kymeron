@@ -8,7 +8,7 @@ class Carriage:
         self.offset_x = float(config.get('offset_x') or 0)
         self.offset_y = float(config.get('offset_y') or 0)
         self.offset_z = float(config.get('offset_z') or 0)
-        self.loaded_button = config.get('loaded_button')
+        # self.loaded_button = config.get('loaded_button')
         self.calibrated = False
         self.printer.add_object('carriage ' + self.name, self)
         self.before_load_gcode = config.get('before_load_gcode', 'RESPOND MSG=Loading')
