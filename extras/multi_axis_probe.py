@@ -420,13 +420,13 @@ class ProbePointsHelper:
         if default_points is None or config.get('points', None) is not None:
             self.probe_points = config.getlists('points', seps=(',', '\n'),
                                                 parser=float, count=2)
-        def_move_z = config.getfloat('horizontal_move_z', 5.)
-        self.default_horizontal_move_z = def_move_z
+        self.default_horizontal_move_z = config.getfloat('horizontal_move_z', 5.)
         self.speed = config.getfloat('speed', 50., above=0.)
-        self.use_offsets = False
+        self.direction = config.get('direction')
+        # self.use_offsets = False
         # Internal probing state
         self.lift_speed = self.speed
-        self.probe_offsets = (0., 0., 0.)
+        # self.probe_offsets = (0., 0., 0.)
         self.manual_results = []
 
     def minimum_points(self,n):
@@ -438,8 +438,8 @@ class ProbePointsHelper:
         self.probe_points = points
         self.minimum_points(min_points)
 
-    def use_xy_offsets(self, use_offsets):
-        self.use_offsets = use_offsets
+    # def use_xy_offsets(self, use_offsets):
+        # self.use_offsets = use_offsets
 
     def get_lift_speed(self):
         return self.lift_speed
@@ -456,14 +456,15 @@ class ProbePointsHelper:
     def _invoke_callback(self, results):
         toolhead = self.printer.lookup_object('toolhead')
         toolhead.get_last_move_time()
-        res = self.finalize_callback(self.probe_offsets, results)
+        res = self.finalize_callback(results)
+        # res = self.finalize_callback(self.probe_offsets, results)
         return res != "retry"
 
     def _move_next(self, probe_num):
         nextpos = list(self.probe_points[probe_num])
-        if self.use_offsets:
-            nextpos[0] -= self.probe_offsets[0]
-            nextpos[1] -= self.probe_offsets[1]
+        # if self.use_offsets:
+        #     nextpos[0] -= self.probe_offsets[0]
+        #     nextpos[1] -= self.probe_offsets[1]
         self._move(nextpos, self.speed)
 
     def start_probe(self, gcmd):
@@ -474,10 +475,10 @@ class ProbePointsHelper:
         self.horizontal_move_z = gcmd.get_float('HORIZONTAL_MOVE_Z', def_move_z)
         # Perform automatic probing
         self.lift_speed = probe.get_probe_params(gcmd)['lift_speed']
-        self.probe_offsets = probe.get_offsets()
-        if self.horizontal_move_z < self.probe_offsets[2]:
-            raise gcmd.error("horizontal_move_z can't be less than probe's z_offset")
-        probe_session = probe.start_probe_session(gcmd, 'z-')
+        # self.probe_offsets = probe.get_offsets()
+        # if self.horizontal_move_z < self.probe_offsets[2]:
+            # raise gcmd.error("horizontal_move_z can't be less than probe's z_offset")
+        probe_session = probe.start_probe_session(gcmd, self.direction)
         probe_num = 0
         while 1:
             self._raise_tool(not probe_num)
@@ -491,9 +492,10 @@ class ProbePointsHelper:
             self._move_next(probe_num)
             probe_session.run_probe(gcmd)
             probe_num += 1
-        probe_session.end_probe_session('z-')
+        probe_session.end_probe_session(self.direction)
 
-def run_single_probe(probe, gcmd, direction='z-'):
+
+def run_single_probe(probe, gcmd, direction):
     probe_session = probe.start_probe_session(gcmd, direction)
     probe_session.run_probe(gcmd, direction)
     pos = probe_session.pull_probed_results()[0]

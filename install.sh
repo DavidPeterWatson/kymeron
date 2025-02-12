@@ -52,6 +52,7 @@ function link_extension {
     ln -srfn "${KYMERON_PATH}/extras/berth.py" "${KLIPPER_PATH}/klippy/extras/berth.py"
     ln -srfn "${KYMERON_PATH}/extras/dock.py" "${KLIPPER_PATH}/klippy/extras/dock.py"
     ln -srfn "${KYMERON_PATH}/extras/multi_axis_probe.py" "${KLIPPER_PATH}/klippy/extras/multi_axis_probe.py"
+    ln -srfn "${KYMERON_PATH}/extras/dual_gantry_level.py" "${KLIPPER_PATH}/klippy/extras/dual_gantry_level.py"
     ln -srfn "${KYMERON_PATH}/extras/multi_fan.py" "${KLIPPER_PATH}/klippy/extras/multi_fan.py"
     ln -srfn "${KYMERON_PATH}/extras/gcode_shell_command.py" "${KLIPPER_PATH}/klippy/extras/gcode_shell_command.py"
     ln -srfn "${KYMERON_PATH}/kymeron_config" "${PRINTER_DATA_PATH}/config"
