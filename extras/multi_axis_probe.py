@@ -290,7 +290,7 @@ class ProbeSessionHelper:
         self.gcode.respond_info(f"Probing {axis_name} axis in {sense} direction")
         toolhead = self.printer.lookup_object('toolhead')
         start_position = self.printer.lookup_object('toolhead').get_position()
-        speed = params['speed'] * 0.5 if direction.startswith('z') else params['speed']
+        speed = params['speed'] * 0.4 if direction.startswith('z') else params['speed']
         retries = 0
         positions = []
         sample_count = params['samples']
