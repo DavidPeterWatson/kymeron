@@ -181,6 +181,7 @@ class ProbeSessionHelper:
         self.homing_helper = HomingViaProbeHelper(config, self.mcu_probes[2])
 
         self.speed = config.getfloat('speed', 5.0, above=0.)
+        self.z_speed = config.getfloat('z_speed', 5.0, above=0.)
         self.acceleration = config.getfloat('acceleration', 0., minval=0.)
         self.lift_speed = config.getfloat('lift_speed', self.speed, above=0.)
         self.bounce_speed_ratio = config.getfloat('bounce_speed_ratio', 0.1, above=0.)
@@ -248,6 +249,7 @@ class ProbeSessionHelper:
         if gcmd is None:
             gcmd = self.dummy_gcode_cmd
         speed = gcmd.get_float("PROBE_SPEED", self.speed, above=0.)
+        z_speed = gcmd.get_float("PROBE_Z_SPEED", self.z_speed, above=0.)
         acceleration = gcmd.get_float("PROBE_ACCELERATION", self.acceleration, minval=0.0)
         max_distance = gcmd.get_float("MAX_DISTANCE", self.max_distance, above=1.0)
         lift_speed = gcmd.get_float("LIFT_SPEED", self.lift_speed, above=0.)
@@ -256,14 +258,12 @@ class ProbeSessionHelper:
         bounce_count = gcmd.get_int("BOUNCE_COUNT", self.bounce_count, minval=1)
         pause_time = gcmd.get_int("PAUSE_TIME", self.pause_time, minval=0.0)
         samples = gcmd.get_int("SAMPLES", self.sample_count, minval=1)
-        sample_retract_dist = gcmd.get_float("SAMPLE_RETRACT_DIST",
-                                             self.sample_retract_dist, above=0.)
-        samples_tolerance = gcmd.get_float("SAMPLES_TOLERANCE",
-                                           self.samples_tolerance, minval=0.)
-        samples_retries = gcmd.get_int("SAMPLES_TOLERANCE_RETRIES",
-                                       self.samples_retries, minval=0)
+        sample_retract_dist = gcmd.get_float("SAMPLE_RETRACT_DIST", self.sample_retract_dist, above=0.)
+        samples_tolerance = gcmd.get_float("SAMPLES_TOLERANCE", self.samples_tolerance, minval=0.)
+        samples_retries = gcmd.get_int("SAMPLES_TOLERANCE_RETRIES", self.samples_retries, minval=0)
         samples_result = gcmd.get("SAMPLES_RESULT", self.samples_result)
         return {'speed': speed,
+                'z_speed': z_speed,
                 'lift_speed': lift_speed,
                 'bounce_speed_ratio': bounce_speed_ratio,
                 'bounce_distance_ratio': bounce_distance_ratio,
@@ -290,7 +290,7 @@ class ProbeSessionHelper:
         self.gcode.respond_info(f"Probing {axis_name} axis in {sense} direction")
         toolhead = self.printer.lookup_object('toolhead')
         start_position = self.printer.lookup_object('toolhead').get_position()
-        speed = params['speed'] * 0.4 if direction.startswith('z') else params['speed']
+        speed = params['z_speed'] if direction.startswith('z') else params['speed']
         retries = 0
         positions = []
         sample_count = params['samples']
@@ -422,6 +422,7 @@ class ProbePointsHelper:
                                                 parser=float, count=2)
         self.default_horizontal_move_z = config.getfloat('horizontal_move_z', 5.)
         self.speed = config.getfloat('speed', 50., above=0.)
+        self.z_speed = config.getfloat('z_speed', 50., above=0.)
         self.direction = config.get('direction')
         # self.use_offsets = False
         # Internal probing state
