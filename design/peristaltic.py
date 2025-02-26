@@ -101,6 +101,8 @@ def main():
     # Step 5: Calculate base torque
     torque_base = torque_from_power(power_m, rpm)
     print(f"Base Torque: {torque_base:.2f} mN·m")
+    
+    
 
     # Step 6: Adjust torque for starting and safety
     torque_final = adjust_torque(torque_base, STARTING_FACTOR, SAFETY_MARGIN)
