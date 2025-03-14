@@ -6,6 +6,9 @@ This script calculates the maximum force a spring steel flexure can withstand
 before permanent deformation occurs. It's designed for use with cartesian maker
 machines that use flexures to provide rigidity in specific directions while
 allowing flexibility in others.
+
+The calculator handles both out-of-plane bending (traditional flexure) and
+in-plane loading (force colinear with width and length of the plate).
 """
 
 import numpy as np
@@ -54,6 +57,7 @@ MATERIALS = {
 def calculate_max_force_cantilever(length, width, thickness, material, safety_factor=1.5):
     """
     Calculate maximum force for a cantilever beam flexure before permanent deformation.
+    This is for out-of-plane loading (force perpendicular to the plate).
     
     Args:
         length: Length of the flexure in mm
@@ -94,6 +98,7 @@ def calculate_max_force_cantilever(length, width, thickness, material, safety_fa
 def calculate_max_force_parallel(length, width, thickness, material, safety_factor=1.5):
     """
     Calculate maximum force for a parallel beam flexure before permanent deformation.
+    This is for out-of-plane loading (force perpendicular to the plate).
     
     Args:
         length: Length of the flexure in mm
@@ -131,6 +136,133 @@ def calculate_max_force_parallel(length, width, thickness, material, safety_fact
     return max_force, max_deflection
 
 
+def calculate_in_plane_tension(length, width, thickness, material, safety_factor=1.5):
+    """
+    Calculate maximum in-plane tensile force before yielding.
+    This is for in-plane loading (force colinear with length and width).
+    
+    Args:
+        length: Length of the flexure in mm
+        width: Width of the flexure in mm
+        thickness: Thickness of the flexure in mm
+        material: Material properties (FlexureMaterial object)
+        safety_factor: Safety factor to apply (default: 1.5)
+        
+    Returns:
+        max_force: Maximum force in Newtons
+        max_elongation: Maximum elongation in mm
+    """
+    # Convert units
+    length_m = length / 1000  # mm to m
+    width_m = width / 1000    # mm to m
+    thickness_m = thickness / 1000  # mm to m
+    
+    # Calculate cross-sectional area
+    area = width_m * thickness_m  # m^2
+    
+    # Calculate maximum stress before yield
+    yield_strength_pa = material.yield_strength * 1e6  # MPa to Pa
+    max_stress = yield_strength_pa / safety_factor  # Pa
+    
+    # Calculate maximum force
+    max_force = max_stress * area  # N
+    
+    # Calculate maximum elongation at yield
+    E = material.elastic_modulus * 1e9  # GPa to Pa
+    max_strain = max_stress / E  # dimensionless
+    max_elongation = max_strain * length_m * 1000  # m to mm
+    
+    return max_force, max_elongation
+
+
+def calculate_buckling_critical_load(length, width, thickness, material, end_condition=4.0, safety_factor=1.5):
+    """
+    Calculate the critical buckling load for a thin plate under compression.
+    This is for in-plane loading (force colinear with length and width).
+    
+    Args:
+        length: Length of the flexure in mm
+        width: Width of the flexure in mm
+        thickness: Thickness of the flexure in mm
+        material: Material properties (FlexureMaterial object)
+        end_condition: End condition factor (default: 4.0 for fixed-fixed)
+                      1.0: Pinned-pinned
+                      2.0: Fixed-pinned
+                      4.0: Fixed-fixed
+        safety_factor: Safety factor to apply (default: 1.5)
+        
+    Returns:
+        critical_load: Critical buckling load in Newtons
+    """
+    # Convert units
+    length_m = length / 1000  # mm to m
+    width_m = width / 1000    # mm to m
+    thickness_m = thickness / 1000  # mm to m
+    
+    # Calculate area moment of inertia for buckling direction
+    # For a plate loaded along its length, buckling occurs around the width axis
+    I = (thickness_m * width_m**3) / 12  # m^4
+    
+    # Calculate cross-sectional area
+    area = width_m * thickness_m  # m^2
+    
+    # Calculate Euler's critical buckling load
+    E = material.elastic_modulus * 1e9  # GPa to Pa
+    P_euler = (end_condition * np.pi**2 * E * I) / (length_m**2)  # N
+    
+    # Calculate slenderness ratio
+    radius_of_gyration = np.sqrt(I / area)  # m
+    slenderness_ratio = length_m / radius_of_gyration
+    
+    # Calculate Johnson's critical buckling load for intermediate columns
+    yield_strength_pa = material.yield_strength * 1e6  # MPa to Pa
+    P_johnson = area * yield_strength_pa * (1 - (yield_strength_pa * slenderness_ratio**2) / (4 * np.pi**2 * E))  # N
+    
+    # Use the smaller of Euler and Johnson buckling loads
+    critical_load = min(P_euler, P_johnson) / safety_factor  # N
+    
+    return critical_load
+
+
+def calculate_plate_buckling(length, width, thickness, material, k=4.0, safety_factor=1.5):
+    """
+    Calculate the critical buckling stress for a thin rectangular plate.
+    This uses plate buckling theory rather than column buckling.
+    
+    Args:
+        length: Length of the flexure in mm (direction of compression)
+        width: Width of the flexure in mm
+        thickness: Thickness of the flexure in mm
+        material: Material properties (FlexureMaterial object)
+        k: Buckling coefficient (depends on boundary conditions and aspect ratio)
+           k=4.0 for simply supported edges
+           k=6.97 for fixed edges
+        safety_factor: Safety factor to apply (default: 1.5)
+        
+    Returns:
+        critical_load: Critical buckling load in Newtons
+    """
+    # Convert units
+    length_m = length / 1000  # mm to m
+    width_m = width / 1000    # mm to m
+    thickness_m = thickness / 1000  # mm to m
+    
+    # Calculate critical buckling stress using plate buckling formula
+    E = material.elastic_modulus * 1e9  # GPa to Pa
+    poisson = material.poisson_ratio
+    
+    # Critical stress formula for plate buckling
+    critical_stress = (k * np.pi**2 * E) / (12 * (1 - poisson**2)) * (thickness_m / width_m)**2  # Pa
+    
+    # Calculate cross-sectional area
+    area = width_m * thickness_m  # m^2
+    
+    # Calculate critical load
+    critical_load = critical_stress * area / safety_factor  # N
+    
+    return critical_load
+
+
 def plot_force_vs_thickness(length, width, thickness_range, material, flexure_type="cantilever"):
     """
     Plot the relationship between flexure thickness and maximum force.
@@ -140,21 +272,31 @@ def plot_force_vs_thickness(length, width, thickness_range, material, flexure_ty
         width: Width of the flexure in mm
         thickness_range: Range of thicknesses to plot (tuple of min, max, step)
         material: Material properties (FlexureMaterial object)
-        flexure_type: Type of flexure ("cantilever" or "parallel")
+        flexure_type: Type of flexure ("cantilever", "parallel", "in_plane", "buckling")
     """
     thicknesses = np.arange(thickness_range[0], thickness_range[1], thickness_range[2])
     forces = []
-    deflections = []
+    deflections_or_elongations = []
     
     for t in thicknesses:
         if flexure_type == "cantilever":
             force, deflection = calculate_max_force_cantilever(length, width, t, material)
-        else:
+            deflections_or_elongations.append(deflection)
+        elif flexure_type == "parallel":
             force, deflection = calculate_max_force_parallel(length, width, t, material)
+            deflections_or_elongations.append(deflection)
+        elif flexure_type == "in_plane":
+            force, elongation = calculate_in_plane_tension(length, width, t, material)
+            deflections_or_elongations.append(elongation)
+        elif flexure_type == "buckling":
+            force = calculate_buckling_critical_load(length, width, t, material)
+            plate_force = calculate_plate_buckling(length, width, t, material)
+            # Use the smaller of the two buckling loads
+            force = min(force, plate_force)
+            deflections_or_elongations.append(0)  # No meaningful deflection for buckling
         forces.append(force)
-        deflections.append(deflection)
     
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 5))
+    fig, ax1 = plt.subplots(figsize=(10, 6))
     
     ax1.plot(thicknesses, forces)
     ax1.set_xlabel('Thickness (mm)')
@@ -162,11 +304,14 @@ def plot_force_vs_thickness(length, width, thickness_range, material, flexure_ty
     ax1.set_title(f'Maximum Force vs. Thickness\n({material.name}, {flexure_type})')
     ax1.grid(True)
     
-    ax2.plot(thicknesses, deflections)
-    ax2.set_xlabel('Thickness (mm)')
-    ax2.set_ylabel('Maximum Deflection (mm)')
-    ax2.set_title(f'Maximum Deflection vs. Thickness\n({material.name}, {flexure_type})')
-    ax2.grid(True)
+    if flexure_type != "buckling":
+        ax2 = ax1.twinx()
+        ax2.plot(thicknesses, deflections_or_elongations, 'r-')
+        if flexure_type == "in_plane":
+            ax2.set_ylabel('Maximum Elongation (mm)', color='r')
+        else:
+            ax2.set_ylabel('Maximum Deflection (mm)', color='r')
+        ax2.tick_params(axis='y', labelcolor='r')
     
     plt.tight_layout()
     plt.savefig(f'{material.name.replace(" ", "_")}_{flexure_type}_force_deflection.png')
@@ -197,12 +342,23 @@ def main():
             print("Please enter a valid number.")
     
     # Get flexure type
+    print("\nFlexure loading types:")
+    print("1. Cantilever (out-of-plane bending)")
+    print("2. Parallel (out-of-plane bending)")
+    print("3. In-plane tension (force colinear with length)")
+    print("4. Buckling (in-plane compression)")
+    
     while True:
-        flexure_type = input("\nFlexure type (cantilever/parallel): ").lower()
-        if flexure_type in ["cantilever", "parallel"]:
-            break
-        else:
-            print("Invalid flexure type. Please enter 'cantilever' or 'parallel'.")
+        try:
+            flexure_type_idx = int(input("\nSelect loading type (number): "))
+            if 1 <= flexure_type_idx <= 4:
+                flexure_types = ["cantilever", "parallel", "in_plane", "buckling"]
+                flexure_type = flexure_types[flexure_type_idx - 1]
+                break
+            else:
+                print("Invalid selection. Please try again.")
+        except ValueError:
+            print("Please enter a valid number.")
     
     # Get dimensions
     length = float(input("\nFlexure length (mm): "))
@@ -215,14 +371,61 @@ def main():
         max_force, max_deflection = calculate_max_force_cantilever(
             length, width, thickness, material, safety_factor
         )
-    else:
+        print("\nResults:")
+        print(f"Maximum force before deformation: {max_force:.2f} N ({max_force/9.81:.2f} kg)")
+        print(f"Maximum deflection at yield: {max_deflection:.2f} mm")
+        
+    elif flexure_type == "parallel":
         max_force, max_deflection = calculate_max_force_parallel(
             length, width, thickness, material, safety_factor
         )
-    
-    print("\nResults:")
-    print(f"Maximum force before deformation: {max_force:.2f} N ({max_force/9.81:.2f} kg)")
-    print(f"Maximum deflection at yield: {max_deflection:.2f} mm")
+        print("\nResults:")
+        print(f"Maximum force before deformation: {max_force:.2f} N ({max_force/9.81:.2f} kg)")
+        print(f"Maximum deflection at yield: {max_deflection:.2f} mm")
+        
+    elif flexure_type == "in_plane":
+        max_force, max_elongation = calculate_in_plane_tension(
+            length, width, thickness, material, safety_factor
+        )
+        print("\nResults:")
+        print(f"Maximum tensile force before yielding: {max_force:.2f} N ({max_force/9.81:.2f} kg)")
+        print(f"Maximum elongation at yield: {max_elongation:.2f} mm")
+        
+    elif flexure_type == "buckling":
+        # Get end condition for buckling
+        print("\nEnd conditions for buckling:")
+        print("1. Pinned-pinned (k=1.0)")
+        print("2. Fixed-pinned (k=2.0)")
+        print("3. Fixed-fixed (k=4.0)")
+        
+        while True:
+            try:
+                end_condition_idx = int(input("\nSelect end condition (number): "))
+                if 1 <= end_condition_idx <= 3:
+                    end_conditions = [1.0, 2.0, 4.0]
+                    end_condition = end_conditions[end_condition_idx - 1]
+                    break
+                else:
+                    print("Invalid selection. Please try again.")
+            except ValueError:
+                print("Please enter a valid number.")
+        
+        euler_critical_load = calculate_buckling_critical_load(
+            length, width, thickness, material, end_condition, safety_factor
+        )
+        
+        plate_critical_load = calculate_plate_buckling(
+            length, width, thickness, material, 
+            k=4.0 if end_condition_idx == 1 else 6.97,  # k depends on boundary conditions
+            safety_factor=safety_factor
+        )
+        
+        critical_load = min(euler_critical_load, plate_critical_load)
+        
+        print("\nResults:")
+        print(f"Euler column buckling load: {euler_critical_load:.2f} N ({euler_critical_load/9.81:.2f} kg)")
+        print(f"Plate buckling load: {plate_critical_load:.2f} N ({plate_critical_load/9.81:.2f} kg)")
+        print(f"Critical buckling load (minimum): {critical_load:.2f} N ({critical_load/9.81:.2f} kg)")
     
     # Ask if user wants to plot force vs thickness
     plot_choice = input("\nDo you want to plot force vs thickness? (y/n): ").lower()
