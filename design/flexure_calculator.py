@@ -252,7 +252,7 @@ def calculate_plate_buckling(length, width, thickness, material, k=4.0, safety_f
     poisson = material.poisson_ratio
     
     # Critical stress formula for plate buckling
-    critical_stress = (k * np.pi**2 * E) / (12 * (1 - poisson**2)) * (thickness_m / width_m)**2  # Pa
+    critical_stress = (k * np.pi**2 * E) / (12 * (1 - poisson**2)) * (thickness_m / length_m)**2  # Pa
     
     # Calculate cross-sectional area
     area = width_m * thickness_m  # m^2
@@ -261,6 +261,194 @@ def calculate_plate_buckling(length, width, thickness, material, k=4.0, safety_f
     critical_load = critical_stress * area / safety_factor  # N
     
     return critical_load
+
+
+def calculate_deflection_due_to_force(length, width, thickness, material, force):
+    """
+    Calculate the deflection of a cantilever beam due to a force applied at one end.
+    
+    Args:
+        length: Length of the flexure in mm
+        width: Width of the flexure in mm
+        thickness: Thickness of the flexure in mm
+        material: Material properties (FlexureMaterial object)
+        force: Force applied at the end in Newtons
+        
+    Returns:
+        deflection: Deflection at the free end in mm
+    """
+    # Convert units
+    length_m = length / 1000  # mm to m
+    width_m = width / 1000    # mm to m
+    thickness_m = thickness / 1000  # mm to m
+    
+    # Calculate area moment of inertia for rectangular cross-section
+    I = (width_m * thickness_m**3) / 12  # m^4
+    
+    # Calculate deflection
+    E = material.elastic_modulus * 1e9  # GPa to Pa
+    deflection = (force * length_m**3) / (3 * E * I) * 1000  # m to mm
+    
+    return deflection
+
+
+def calculate_force_for_deflection(length, width, thickness, material, deflection):
+    """
+    Calculate the force required to achieve a given deflection at the free end of a cantilever beam.
+    
+    Args:
+        length: Length of the flexure in mm
+        width: Width of the flexure in mm
+        thickness: Thickness of the flexure in mm
+        material: Material properties (FlexureMaterial object)
+        deflection: Desired deflection at the free end in mm
+        
+    Returns:
+        force: Force required in Newtons
+    """
+    # Convert units
+    length_m = length / 1000  # mm to m
+    width_m = width / 1000    # mm to m
+    thickness_m = thickness / 1000  # mm to m
+    
+    # Calculate area moment of inertia for rectangular cross-section
+    I = (width_m * thickness_m**3) / 12  # m^4
+    
+    # Calculate force
+    E = material.elastic_modulus * 1e9  # GPa to Pa
+    force = (3 * E * I * deflection / 1000) / (length_m**3)  # mm to m
+    
+    return force
+
+
+def calculate_length_decrease_due_to_deflection(length, deflection, end_condition="fixed_free"):
+    """
+    Calculate the decrease in length of a flexure when it is deflected, based on the end condition.
+    
+    Args:
+        length: Original length of the flexure in mm
+        deflection: Deflection at the end in mm
+        end_condition: Type of end condition ("fixed_free", "fixed_guided")
+        
+    Returns:
+        length_decrease: Decrease in length in mm
+    """
+    if end_condition == "fixed_free":
+        # For a cantilever (fixed-free), use the original formula
+        length_decrease = (deflection**2) / (2 * length)
+    elif end_condition == "fixed_guided":
+        # For a fixed-guided beam, the decrease in length is typically less
+        # due to the constraint on rotation at the guided end.
+        # This is a simplified approximation.
+        length_decrease = (deflection**2) / (3 * length)
+    else:
+        raise ValueError("Unsupported end condition. Choose 'fixed_free' or 'fixed_guided'.")
+    
+    return length_decrease
+
+
+def calculate_deflection_fixed_guided(length, width, thickness, material, force):
+    """
+    Calculate the deflection of a beam with a fixed end and a guided end due to a force applied at the guided end.
+    
+    Args:
+        length: Length of the flexure in mm
+        width: Width of the flexure in mm
+        thickness: Thickness of the flexure in mm
+        material: Material properties (FlexureMaterial object)
+        force: Force applied at the guided end in Newtons
+        
+    Returns:
+        deflection: Deflection at the guided end in mm
+    """
+    # Convert units
+    length_m = length / 1000  # mm to m
+    width_m = width / 1000    # mm to m
+    thickness_m = thickness / 1000  # mm to m
+    
+    # Calculate area moment of inertia for rectangular cross-section
+    I = (width_m * thickness_m**3) / 12  # m^4
+    
+    # Calculate deflection
+    E = material.elastic_modulus * 1e9  # GPa to Pa
+    deflection = (force * length_m**3) / (12 * E * I) * 1000  # m to mm
+    
+    return deflection
+
+
+def calculate_deflection_with_end_condition(length, width, thickness, material, force, end_condition="cantilever"):
+    """
+    Calculate the deflection of a beam based on the specified end condition.
+    
+    Args:
+        length: Length of the flexure in mm
+        width: Width of the flexure in mm
+        thickness: Thickness of the flexure in mm
+        material: Material properties (FlexureMaterial object)
+        force: Force applied at the end in Newtons
+        end_condition: Type of end condition ("cantilever", "fixed_guided")
+        
+    Returns:
+        deflection: Deflection at the end in mm
+    """
+    if end_condition == "cantilever":
+        return calculate_deflection_due_to_force(length, width, thickness, material, force)
+    elif end_condition == "fixed_guided":
+        return calculate_deflection_fixed_guided(length, width, thickness, material, force)
+    else:
+        raise ValueError("Unsupported end condition. Choose 'cantilever' or 'fixed_guided'.")
+
+
+def calculate_force_for_deflection_fixed_guided(length, width, thickness, material, deflection):
+    """
+    Calculate the force required to achieve a given deflection at the guided end of a fixed-guided beam.
+    
+    Args:
+        length: Length of the flexure in mm
+        width: Width of the flexure in mm
+        thickness: Thickness of the flexure in mm
+        material: Material properties (FlexureMaterial object)
+        deflection: Desired deflection at the guided end in mm
+        
+    Returns:
+        force: Force required in Newtons
+    """
+    # Convert units
+    length_m = length / 1000  # mm to m
+    width_m = width / 1000    # mm to m
+    thickness_m = thickness / 1000  # mm to m
+    
+    # Calculate area moment of inertia for rectangular cross-section
+    I = (width_m * thickness_m**3) / 12  # m^4
+    
+    # Calculate force
+    E = material.elastic_modulus * 1e9  # GPa to Pa
+    force = (12 * E * I * deflection / 1000) / (length_m**3)  # mm to m
+    
+    return force
+
+
+def calculate_force_for_deflection_with_end_condition(length, width, thickness, material, deflection, end_condition="cantilever"):
+    """
+    Calculate the force required to achieve a given deflection based on the specified end condition.
+    
+    Args:
+        length: Length of the flexure in mm
+        width: Width of the flexure in mm
+        thickness: Thickness of the flexure in mm
+        material: Material properties (FlexureMaterial object)
+        deflection: Desired deflection at the end in mm
+        end_condition: Type of end condition ("cantilever", "fixed_guided")
+        
+    Returns:
+        force: Force required in Newtons
+    """
+    if end_condition == "cantilever":
+        return calculate_force_for_deflection(length, width, thickness, material, deflection)
+    elif end_condition == "fixed_guided":
+        return calculate_force_for_deflection_fixed_guided(length, width, thickness, material, deflection)
+    else:
+        raise ValueError("Unsupported end condition. Choose 'cantilever' or 'fixed_guided'.")
 
 
 def plot_force_vs_thickness(length, width, thickness_range, material, flexure_type="cantilever"):
