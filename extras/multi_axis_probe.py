@@ -295,6 +295,7 @@ class ProbeSessionHelper:
         start_position = self.printer.lookup_object('toolhead').get_position()
         speed = params['z_speed'] if direction.startswith('z') else params['speed']
         retries = 0
+        bounce_retries = 0
         positions = []
         sample_count = params['samples']
         while len(positions) < sample_count:
@@ -303,11 +304,11 @@ class ProbeSessionHelper:
                 pos = self._bouncing_probe(speed, direction)
                 positions.append(pos)
             except self.printer.command_error as e:
-                logging.error(f"Error probing: {e}")
-                if retries >= params['bounce_retries']:
+                # logging.error(f"Error probing: {e}")
+                if bounce_retries >= params['bounce_retries']:
                     raise gcmd.error("Probe error retries exceed bounce_retries")
                 gcmd.respond_info(f"Error probing: {e}. Retrying...")
-                retries += 1
+                bounce_retries += 1
                 positions = []
             # Check samples tolerance
             axis_positions = [p[axis] for p in positions]
