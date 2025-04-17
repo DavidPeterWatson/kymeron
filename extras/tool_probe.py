@@ -52,14 +52,24 @@ class ToolProbe:
             raise gcmd.error(
                 "No recorded sensor location, please run TOOL_LOCATE_SENSOR first")
         probe = self.printer.lookup_object(self.probe_name)
-        probe_session = probe.start_probe_session(gcmd)
-        location = self.locate_sensor(probe_session, gcmd)
-        probe_session.end_probe_session()
-        self.last_result = [location[i] - self.sensor_location[i] for i in
-                            range(3)]
-        self.gcode.respond_info("Tool offset is %.6f,%.6f,%.6f"
-                                % (self.last_result[0], self.last_result[1],
-                                   self.last_result[2]))
+        retry = 0
+        max_retries = 3
+        while retry < max_retries:
+            try:
+                probe_session = probe.start_probe_session(gcmd)
+                location = self.locate_sensor(probe_session, gcmd)
+                probe_session.end_probe_session()
+                self.last_result = [location[i] - self.sensor_location[i] for i in
+                                range(3)]
+                self.gcode.respond_info("Tool offset is %.6f,%.6f,%.6f"
+                                        % (self.last_result[0], self.last_result[1],
+                                        self.last_result[2]))
+            except self.printer.command_error as e:
+                probe_session.end_probe_session()
+                retry += 1
+                self.gcode.respond_info("Error calibrating tool offset: {e}. Retrying...")
+                if retry >= max_retries:
+                    raise gcmd.error(f"Error calibrating tool offset: {e}")
 
     def locate_sensor(self, probe_session, gcmd):
         toolhead = self.printer.lookup_object('toolhead')

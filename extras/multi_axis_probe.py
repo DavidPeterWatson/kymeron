@@ -187,7 +187,6 @@ class ProbeSessionHelper:
         self.bounce_speed_ratio = config.getfloat('bounce_speed_ratio', 0.1, above=0.)
         self.bounce_distance_ratio = config.getfloat('bounce_distance_ratio', 0.3, above=0.)
         self.bounce_count = config.getint('bounce_count', 3, minval=1)
-        self.bounce_retries = config.getint('bounce_retries', 3, minval=0)
         self.pause_time = config.getfloat('pause_time', 0.3, minval=0.0)
         self.max_distance = config.getfloat('max_distance', 10.0, above=0.)
         self.sample_count = config.getint('samples', 1, minval=1)
@@ -257,7 +256,6 @@ class ProbeSessionHelper:
         bounce_speed_ratio = gcmd.get_float("BOUNCE_SPEED_RATIO", self.bounce_speed_ratio, above=0.1)
         bounce_distance_ratio = gcmd.get_float("BOUNCE_DISTANCE_RATIO", self.bounce_distance_ratio, above=0.1)
         bounce_count = gcmd.get_int("BOUNCE_COUNT", self.bounce_count, minval=1)
-        bounce_retries = gcmd.get_int("BOUNCE_RETRIES", self.bounce_retries, minval=0)
         pause_time = gcmd.get_int("PAUSE_TIME", self.pause_time, minval=0.0)
         samples = gcmd.get_int("SAMPLES", self.sample_count, minval=1)
         sample_retract_dist = gcmd.get_float("SAMPLE_RETRACT_DIST", self.sample_retract_dist, above=0.)
@@ -270,7 +268,6 @@ class ProbeSessionHelper:
                 'bounce_speed_ratio': bounce_speed_ratio,
                 'bounce_distance_ratio': bounce_distance_ratio,
                 'bounce_count': bounce_count,
-                'bounce_retries': bounce_retries,
                 'pause_time': pause_time,
                 'acceleration': acceleration,
                 'max_distance': max_distance,
@@ -295,21 +292,13 @@ class ProbeSessionHelper:
         start_position = self.printer.lookup_object('toolhead').get_position()
         speed = params['z_speed'] if direction.startswith('z') else params['speed']
         retries = 0
-        bounce_retries = 0
         positions = []
         sample_count = params['samples']
         while len(positions) < sample_count:
             # Probe position
-            try:
-                pos = self._bouncing_probe(speed, direction)
-                positions.append(pos)
-            except self.printer.command_error as e:
-                # logging.error(f"Error probing: {e}")
-                if bounce_retries >= params['bounce_retries']:
-                    raise gcmd.error("Probe error retries exceed bounce_retries")
-                gcmd.respond_info(f"Error probing: {e}. Retrying...")
-                bounce_retries += 1
-                positions = []
+            pos = self._bouncing_probe(speed, direction)
+            positions.append(pos)
+
             # Check samples tolerance
             axis_positions = [p[axis] for p in positions]
             if max(axis_positions)-min(axis_positions) > params['samples_tolerance']:
