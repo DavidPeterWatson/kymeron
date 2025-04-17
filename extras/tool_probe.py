@@ -64,10 +64,11 @@ class ToolProbe:
                 self.gcode.respond_info("Tool offset is %.6f,%.6f,%.6f"
                                         % (self.last_result[0], self.last_result[1],
                                         self.last_result[2]))
+                break
             except self.printer.command_error as e:
                 probe_session.end_probe_session()
                 retry += 1
-                self.gcode.respond_info("Error calibrating tool offset: {e}. Retrying...")
+                self.gcode.respond_info(f"Error calibrating tool offset: {e}. Retrying {retry} of {max_retries}")
                 if retry >= max_retries:
                     raise gcmd.error(f"Error calibrating tool offset: {e}")
 
