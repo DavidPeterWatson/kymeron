@@ -6,6 +6,7 @@ class Brush:
         self.brush_length = float(config.get('brush_length') or 80)
         self.brush_x_pos = float(config.get('brush_x_pos') or 0)
         self.brush_y_pos = float(config.get('brush_y_pos') or 100)
+        self.brush_speed = float(config.get('brush_speed') or 100)
         self.safe_z_pos_for_brush = float(config.get('safe_z_pos_for_brush') or 30)
         self.printer.add_object('brush', self)
 
