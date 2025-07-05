@@ -46,7 +46,7 @@ class ProbeCommandHelper:
     def cmd_PROBE(self, gcmd):
         direction = gcmd.get("DIRECTION", 'z-')
         pos = run_single_probe(self.probe, gcmd, direction)
-        gcmd.respond_info(f"Result is {pos[0]}, {pos[1]}, {pos[2]}")
+        gcmd.respond_info(f"Result is {pos[0]:.6f}, {pos[1]:.6f}, {pos[2]:.6f}")
         self.last_z_result = pos[2]
 
     cmd_PROBE_ACCURACY_help = "Probe Z-height accuracy at current XY position"
