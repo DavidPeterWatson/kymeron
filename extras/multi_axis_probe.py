@@ -405,7 +405,7 @@ class ProbeOffsetsHelper:
     def __init__(self, config):
         self.x_offset = config.getfloat('x_offset', 0.)
         self.y_offset = config.getfloat('y_offset', 0.)
-        self.z_offset = config.getfloat('z_offset')
+        self.z_offset = config.getfloat('z_offset', 0.)
     def get_offsets(self):
         return self.x_offset, self.y_offset, self.z_offset
 
